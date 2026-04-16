@@ -5,6 +5,7 @@ import {
   neonFlicker, glitchText, scanlineSweep, cardEntrance,
   driftRight, driftLeft, eqBounce, staticFlicker, glowPulse,
 } from "../components/animations";
+import SynthPlayer from "../components/SynthPlayer";
 
 const C = {
   bg:              "#131313",
@@ -480,6 +481,7 @@ const Home: React.FC = () => {
           </HeaderNav>
         </div>
         <span className="material-symbols-outlined" style={{ color: C.onSurface, cursor: "pointer" }}>settings</span>
+        <SynthPlayer />
       </Header>
 
       <Sidebar>
