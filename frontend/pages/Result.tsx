@@ -321,11 +321,7 @@ const Result: React.FC = () => {
           <MetaGrid>
             <MetaCard accent={accent}>
               <SectionLabel>COACH</SectionLabel>
-              <MetaValue>{result.coach ?? coach}</MetaValue>
-            </MetaCard>
-            <MetaCard accent={accent}>
-              <SectionLabel>SIKKERHETSNOTE</SectionLabel>
-              <MetaValue>{result.safety_note ?? "ingen"}</MetaValue>
+              <MetaValue>{coachName}</MetaValue>
             </MetaCard>
           </MetaGrid>
         </ResultCard>
