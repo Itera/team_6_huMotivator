@@ -5,7 +5,6 @@ import { ThemeProvider } from "../components/ThemeProvider";
 import Home from "../pages/Home";
 import Result from "../pages/Result";
 
-
 const App: React.FC = () => {
   return (
     <ThemeProvider>
@@ -14,7 +13,6 @@ const App: React.FC = () => {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/result" element={<Result />} />
-
         </Routes>
       </Router>
     </ThemeProvider>

@@ -23,42 +23,25 @@ const Input = styled.input`
   font-size: 1rem;
 `;
 
-<<<<<<< HEAD
-const Select = styled.select`
-  width: 100%;
-  padding: 0.75rem;
-  margin-bottom: 1rem;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-  font-size: 1rem;
-`;
-
-const Button = styled.button`
-  background: #0f8b8d;
-  color: #fff;
-  border: none;
-=======
-
 interface CoachButtonProps {
   selected?: boolean;
 }
 
 const CoachButton = styled.button<CoachButtonProps>`
-  background: ${({ selected }) => (selected ? '#aa3bff' : '#e5e4e7')};
-  color: ${({ selected }) => (selected ? '#fff' : '#222')};
-  border: ${({ selected }) => (selected ? '2px solid #aa3bff' : '2px solid transparent')};
->>>>>>> 043408f (feat(coach): add coach template)
+  background: ${({ selected }) => (selected ? "#aa3bff" : "#e5e4e7")};
+  color: ${({ selected }) => (selected ? "#fff" : "#222")};
+  border: ${({ selected }) =>
+    selected ? "2px solid #aa3bff" : "2px solid transparent"};
   border-radius: 6px;
   padding: 0.75rem 1.5rem;
   font-size: 1rem;
   cursor: pointer;
-  transition: background 0.2s, border 0.2s, color 0.2s;
+  transition:
+    background 0.2s,
+    border 0.2s,
+    color 0.2s;
   &:hover {
-<<<<<<< HEAD
-    background: #0b6f71;
-=======
-    background: ${({ selected }) => (selected ? '#7a2bbd' : '#d1cfe2')};
->>>>>>> 043408f (feat(coach): add coach template)
+    background: ${({ selected }) => (selected ? "#7a2bbd" : "#d1cfe2")};
   }
 `;
 
@@ -77,11 +60,10 @@ const Loader = styled.div`
   margin: 1rem 0;
 `;
 
-
 const coaches = [
-  { key: 'serious', name: 'Seriøs Coach' },
-  { key: 'clown', name: 'Kontorklovn' },
-  { key: 'zen', name: 'Zen-mester' },
+  { key: "serious", name: "Seriøs Coach" },
+  { key: "clown", name: "Kontorklovn" },
+  { key: "zen", name: "Zen-mester" },
 ];
 
 const Home: React.FC = () => {
@@ -89,7 +71,7 @@ const Home: React.FC = () => {
   const [models, setModels] = useState<string[]>([]);
   const [selectedModel, setSelectedModel] = useState("llama3.2");
   const [loading, setLoading] = useState(false);
-  const [selectedCoach, setSelectedCoach] = useState<string>('serious');
+  const [selectedCoach, setSelectedCoach] = useState<string>("serious");
   const navigate = useNavigate();
   const { theme, setTheme } = useTheme();
 
@@ -136,7 +118,7 @@ const Home: React.FC = () => {
       <CoachSelector>
         <strong>Velg coach:</strong>
         <CoachButtonGroup>
-          {coaches.map(coach => (
+          {coaches.map((coach) => (
             <CoachButton
               key={coach.key}
               type="button"
@@ -155,21 +137,7 @@ const Home: React.FC = () => {
         value={task}
         onChange={(e) => setTask(e.target.value)}
       />
-<<<<<<< HEAD
-      <Select
-        value={selectedModel}
-        onChange={(e) => setSelectedModel(e.target.value)}
-      >
-        {models.map((model) => (
-          <option key={model} value={model}>
-            {model}
-          </option>
-        ))}
-      </Select>
-      <Button onClick={handleMotivate} disabled={loading || !task}>
-=======
       <CoachButton onClick={handleMotivate} disabled={loading || !task}>
->>>>>>> 043408f (feat(coach): add coach template)
         Motiver meg
       </CoachButton>
       {loading && <Loader>Laster motivasjon...</Loader>}
