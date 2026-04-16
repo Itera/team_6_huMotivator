@@ -57,3 +57,39 @@ One team member sets up a repo on GitHub. Help each other get it running on all 
 Everyone on the team should create a PR, i.e., try at least one prompt and build something that becomes part of the solution.
 
 The goal is not perfection, but to play with AI, test, and produce a presentable (un)professional result.
+
+## Demo-Ready Scaffold (Synced With Main)
+
+The repository now includes:
+
+- Frontend (React + Vite): `frontend/`
+- Backend (FastAPI + Ollama): `backend/`
+- Backend API tests (pytest): `backend/tests/test_main.py`
+
+### Run backend
+
+```bash
+cd backend
+docker compose up --build
+```
+
+Backend is available at `http://localhost:8000`.
+
+### Run frontend
+
+```bash
+cd frontend
+cp .env.example .env
+npm install
+npm run dev
+```
+
+Open the local Vite URL and test the full flow from Home to Result.
+
+### Run tests
+
+```bash
+cd backend
+docker build -t humotivator-backend-test .
+docker run --rm humotivator-backend-test pytest -q
+```

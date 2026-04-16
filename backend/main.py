@@ -1,6 +1,6 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, field_validator
 
 import llm_service
 
@@ -16,13 +16,42 @@ app.add_middleware(
 
 
 class MotivateRequest(BaseModel):
-    task: str
+    task: str = Field(min_length=3, max_length=280)
     model: str = "llama3.2"
+
+    @field_validator("task")
+    @classmethod
+    def normalize_task(cls, value: str) -> str:
+        normalized = value.strip()
+        if not normalized:
+            raise ValueError("task must not be empty")
+        return normalized
 
 
 class PoemRequest(BaseModel):
-    topic: str
+    topic: str = Field(min_length=2, max_length=180)
     model: str = "llama3.2"
+
+    @field_validator("topic")
+    @classmethod
+    def normalize_topic(cls, value: str) -> str:
+        normalized = value.strip()
+        if not normalized:
+            raise ValueError("topic must not be empty")
+        return normalized
+
+
+FORBIDDEN_TERMS = ["hate", "kill", "racist", "sexist"]
+
+
+def _apply_safety_filter(text: str) -> tuple[str, bool]:
+    lowered = text.lower()
+    if any(term in lowered for term in FORBIDDEN_TERMS):
+        return (
+            "Du har dette. Ta ett tydelig neste steg, og bygg momentum derfra.",
+            True,
+        )
+    return text, False
 
 
 @app.get("/")
@@ -57,7 +86,12 @@ async def motivate(req: MotivateRequest):
     )
     try:
         response = await llm_service.generate(prompt, model=req.model)
-        return {"motivation": response}
+        safe_text, filtered = _apply_safety_filter(response)
+        return {
+            "motivation": safe_text,
+            "model_used": req.model,
+            "safety_note": "Filtered for respectful tone" if filtered else "Tone OK",
+        }
     except Exception as e:
         raise HTTPException(status_code=502, detail=f"LLM error: {e}")
 
@@ -72,6 +106,11 @@ async def poem(req: PoemRequest):
     )
     try:
         response = await llm_service.generate(prompt, model=req.model)
-        return {"poem": response}
+        safe_text, filtered = _apply_safety_filter(response)
+        return {
+            "poem": safe_text,
+            "model_used": req.model,
+            "safety_note": "Filtered for respectful tone" if filtered else "Tone OK",
+        }
     except Exception as e:
         raise HTTPException(status_code=502, detail=f"LLM error: {e}")
