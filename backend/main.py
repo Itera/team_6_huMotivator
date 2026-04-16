@@ -2,8 +2,11 @@ from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from enum import Enum
 from pydantic import BaseModel, Field, field_validator
+import json
+import re
 
 import llm_service
+import youtube_service
 
 app = FastAPI(title="HuMotivatoren API", version="0.1.0")
 
@@ -56,6 +59,31 @@ COACH_SYSTEM_PROMPTS = {
     ),
 }
 
+COACH_MEDIA_BIAS: dict[CoachType, str] = {
+    CoachType.coach1: "motivation speech discipline workout",
+    CoachType.coach2: "guided meditation calm mindfulness",
+    CoachType.coach3: "ambient meditation spiritual nature sounds",
+}
+
+STRUCTURED_SUFFIX = (
+    "\n\nSvar ALLTID med gyldig JSON og ingenting annet. Formatet skal være:\n"
+    '{"text": "din motivasjonstekst her", '
+    '"media": {"type": "youtube", "query": "søkeord for relevant video"}}\n'
+    'Sett media.type til "none" og media.query til "" hvis video ikke passer.'
+)
+
+
+def _parse_llm_json(raw: str) -> dict:
+    """Try to extract JSON from the LLM response, falling back to plain text."""
+    cleaned = raw.strip()
+    # Strip markdown code fences if the model wraps them
+    cleaned = re.sub(r"^```(?:json)?\s*", "", cleaned)
+    cleaned = re.sub(r"\s*```$", "", cleaned)
+    try:
+        return json.loads(cleaned)
+    except (json.JSONDecodeError, ValueError):
+        return {"text": raw, "media": {"type": "none", "query": ""}}
+
 
 class PoemRequest(BaseModel):
     topic: str = Field(min_length=2, max_length=180)
@@ -107,8 +135,8 @@ def motivate(
     coach: CoachType = Query(..., description="Coach style: coach1, coach2, or coach3"),
     task: str = Query(default="", description="Optional task to motivate about"),
 ):
-    """Get motivational content from a specific coach personality."""
-    system_prompt = COACH_SYSTEM_PROMPTS[coach]
+    """Get motivational content from a specific coach personality, optionally enriched with media."""
+    system_prompt = COACH_SYSTEM_PROMPTS[coach] + STRUCTURED_SUFFIX
     user_prompt = (
         f"Gi meg motivasjon for denne oppgaven: {task.strip()}. Svar kort og på norsk."
         if task.strip()
@@ -120,13 +148,32 @@ def motivate(
         {"role": "user", "content": user_prompt},
     ]
     try:
-        response = llm_service.chat(messages)
-        safe_text, filtered = _apply_safety_filter(response)
-        return {
+        raw_response = llm_service.chat(messages)
+        parsed = _parse_llm_json(raw_response)
+
+        motivation_text = parsed.get("text", raw_response)
+        media_block = parsed.get("media", {"type": "none", "query": ""})
+        media_type = media_block.get("type", "none")
+        media_query = media_block.get("query", "")
+
+        safe_text, filtered = _apply_safety_filter(motivation_text)
+
+        # Enrich with YouTube when the model recommends it
+        media_result = None
+        if media_type == "youtube" and media_query:
+            bias = COACH_MEDIA_BIAS.get(coach, "")
+            enriched_query = f"{media_query} {bias}".strip()
+            media_result = youtube_service.search_video(enriched_query)
+
+        result: dict = {
             "motivation": safe_text,
             "coach": coach.value,
             "safety_note": "Filtered for respectful tone" if filtered else "Tone OK",
         }
+        if media_result:
+            result["media"] = media_result
+
+        return result
     except Exception as e:
         raise HTTPException(status_code=502, detail=f"LLM error: {e}")
 

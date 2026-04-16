@@ -27,7 +27,8 @@ def test_models_ok(monkeypatch):
     assert response.json()["models"] == ["llama3.2", "gemma3:1b"]
 
 
-def test_motivate_ok(monkeypatch):
+def test_motivate_ok_plain_text(monkeypatch):
+    """LLM returns plain text (not JSON) – should still work gracefully."""
     def fake_chat(messages: list, model: str = "gemma3:1b"):
         return "Du klarer dette. Start med ett konkret steg."
 
@@ -40,6 +41,57 @@ def test_motivate_ok(monkeypatch):
     assert "motivation" in payload
     assert payload["coach"] == "coach1"
     assert payload["safety_note"] == "Tone OK"
+    assert "media" not in payload
+
+
+def test_motivate_ok_with_media(monkeypatch):
+    """LLM returns structured JSON with youtube suggestion."""
+    import json as _json
+
+    def fake_chat(messages: list, model: str = "gemma3:1b"):
+        return _json.dumps({
+            "text": "Kom igjen! Du har dette!",
+            "media": {"type": "youtube", "query": "motivasjon trening"}
+        })
+
+    def fake_search(query, limit=1):
+        return {
+            "type": "youtube",
+            "title": "Motivasjonsvideo",
+            "url": "https://www.youtube.com/watch?v=abc123",
+            "thumbnail": "https://i.ytimg.com/vi/abc123/default.jpg",
+        }
+
+    monkeypatch.setattr(main.llm_service, "chat", fake_chat)
+    monkeypatch.setattr(main.youtube_service, "search_video", fake_search)
+
+    response = client.get("/motivate?coach=coach1&task=Trene+hardt")
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["motivation"] == "Kom igjen! Du har dette!"
+    assert payload["media"]["type"] == "youtube"
+    assert "youtube.com" in payload["media"]["url"]
+
+
+def test_motivate_ok_media_none(monkeypatch):
+    """LLM returns JSON with media type 'none' – no media in response."""
+    import json as _json
+
+    def fake_chat(messages: list, model: str = "gemma3:1b"):
+        return _json.dumps({
+            "text": "Bare gjør det.",
+            "media": {"type": "none", "query": ""}
+        })
+
+    monkeypatch.setattr(main.llm_service, "chat", fake_chat)
+
+    response = client.get("/motivate?coach=coach1&task=Les+bok")
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["motivation"] == "Bare gjør det."
+    assert "media" not in payload
 
 
 def test_motivate_without_task(monkeypatch):
@@ -55,8 +107,13 @@ def test_motivate_without_task(monkeypatch):
 
 
 def test_motivate_safety_filter(monkeypatch):
+    import json as _json
+
     def fake_chat(messages: list, model: str = "gemma3:1b"):
-        return "You should kill this task quickly"
+        return _json.dumps({
+            "text": "You should kill this task quickly",
+            "media": {"type": "none", "query": ""}
+        })
 
     monkeypatch.setattr(main.llm_service, "chat", fake_chat)
 
