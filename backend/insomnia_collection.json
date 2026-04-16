@@ -1,0 +1,47 @@
+{
+  "_type": "export",
+  "export_format": 4,
+  "export_source": "humotivatoren",
+  "resources": [
+    {
+      "_id": "wrk_humotivatoren",
+      "_type": "workspace",
+      "name": "HuMotivatoren API",
+      "description": "API-endepunkter for HuMotivatoren",
+      "scope": "collection"
+    },
+    {
+      "_id": "env_base",
+      "_type": "environment",
+      "parentId": "wrk_humotivatoren",
+      "name": "Local",
+      "data": {
+        "base_url": "http://localhost:8000"
+      }
+    },
+    {
+      "_id": "fld_general",
+      "_type": "request_group",
+      "parentId": "wrk_humotivatoren",
+      "name": "General"
+    },
+    {
+      "_id": "req_root",
+      "_type": "request",
+      "parentId": "fld_general",
+      "name": "Root",
+      "method": "GET",
+      "url": "{{ _.base_url }}/",
+      "headers": []
+    },
+    {
+      "_id": "req_health",
+      "_type": "request",
+      "parentId": "fld_general",
+      "name": "Health Check",
+      "method": "GET",
+      "url": "{{ _.base_url }}/health",
+      "headers": []
+    }
+  ]
+}
