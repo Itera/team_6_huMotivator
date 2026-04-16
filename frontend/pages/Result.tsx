@@ -1,6 +1,7 @@
 import React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import styled from "styled-components";
+import { neonFlicker, glitchText, scanlineSweep, cardEntrance, buttonShake } from "../components/animations";
 
 const C = {
   bg:          "#131313",
@@ -50,6 +51,15 @@ const Header = styled.header`
   box-shadow: 0 0 20px rgba(255,0,255,0.3);
 `;
 
+const ScanlineSweep = styled.div`
+  pointer-events: none;
+  position: fixed;
+  left: 0; width: 100%; height: 8px;
+  z-index: 1;
+  background: linear-gradient(to bottom, transparent, rgba(195,244,0,0.15), transparent);
+  animation: ${scanlineSweep} 6s linear infinite;
+`;
+
 const Logo = styled.h1`
   font-family: 'Epilogue', sans-serif;
   font-weight: 900;
@@ -60,6 +70,7 @@ const Logo = styled.h1`
   color: ${C.primary};
   margin: 0;
   text-shadow: 0 0 12px rgba(255,0,255,0.6);
+  animation: ${neonFlicker} 6s ease-in-out infinite;
 `;
 
 const Main = styled.main`
@@ -82,6 +93,7 @@ const PageTitle = styled.h2<{ accent: string }>`
   margin: 0 0 2rem;
   border-left: 8px solid ${({ accent }) => accent};
   padding-left: 1.5rem;
+  animation: ${glitchText} 8s steps(1) infinite;
 
   span {
     color: ${({ accent }) => accent};
@@ -95,6 +107,7 @@ const ResultCard = styled.div<{ accent: string }>`
   padding: 2.5rem;
   margin-bottom: 2rem;
   box-shadow: 8px 8px 0px ${({ accent }) => accent}44;
+  animation: ${cardEntrance} 0.5s cubic-bezier(0.22,1,0.36,1) both;
 `;
 
 const SectionLabel = styled.p`
@@ -157,7 +170,7 @@ const PrimaryBtn = styled.button`
   letter-spacing: -0.02em;
   cursor: pointer;
   box-shadow: 6px 6px 0px ${C.secondary};
-  &:hover { box-shadow: 8px 8px 0px ${C.tertiary}; }
+  &:hover { animation: ${buttonShake} 0.3s steps(1) 1; box-shadow: 8px 8px 0px ${C.tertiary}; }
   &:active { transform: translate(4px,4px); box-shadow: 2px 2px 0px ${C.secondary}; }
 `;
 
@@ -199,6 +212,7 @@ const Result: React.FC = () => {
   return (
     <>
       <ScanlineOverlay />
+      <ScanlineSweep />
       <Header>
         <Logo>HUMOTIVATOREN</Logo>
         <span className="material-symbols-outlined" style={{ color: C.onSurface, cursor: "pointer" }}>settings</span>

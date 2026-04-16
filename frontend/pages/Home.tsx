@@ -1,6 +1,10 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
+import {
+  neonFlicker, glitchText, scanlineSweep, cardEntrance,
+  driftRight, driftLeft, eqBounce, staticFlicker, glowPulse,
+} from "../components/animations";
 
 const C = {
   bg:              "#131313",
@@ -33,6 +37,15 @@ const ScanlineOverlay = styled.div`
   background-size: 100% 4px, 3px 100%;
 `;
 
+const ScanlineSweep = styled.div`
+  pointer-events: none;
+  position: fixed;
+  left: 0; width: 100%; height: 8px;
+  z-index: 1;
+  background: linear-gradient(to bottom, transparent, rgba(195,244,0,0.15), transparent);
+  animation: ${scanlineSweep} 6s linear infinite;
+`;
+
 const DecoLine1 = styled.div`
   position: fixed;
   top: 25%;
@@ -40,9 +53,9 @@ const DecoLine1 = styled.div`
   width: 16rem;
   height: 0.5rem;
   background: ${C.primary};
-  transform: rotate(-45deg);
   opacity: 0.15;
   pointer-events: none;
+  animation: ${driftRight} 8s ease-in-out infinite alternate;
 `;
 const DecoLine2 = styled.div`
   position: fixed;
@@ -51,9 +64,9 @@ const DecoLine2 = styled.div`
   width: 24rem;
   height: 1rem;
   background: ${C.tertiary};
-  transform: rotate(12deg);
   opacity: 0.08;
   pointer-events: none;
+  animation: ${driftLeft} 10s ease-in-out infinite alternate;
 `;
 
 const Header = styled.header`
@@ -79,7 +92,8 @@ const Logo = styled.h1`
   letter-spacing: -0.04em;
   color: ${C.primary};
   margin: 0;
-  text-shadow: 0 0 12px rgba(255,0,255,0.6);
+  animation: ${neonFlicker} 8s infinite;
+  cursor: default;
 `;
 
 const HeaderNav = styled.nav`
@@ -164,6 +178,22 @@ const SidebarFooter = styled.div`
   padding: 1.5rem;
 `;
 
+const EQBars = styled.div`
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 2rem;
+  padding: 0 1.5rem;
+  margin-bottom: 1rem;
+`;
+
+interface EQBarProps { h1: number; h2: number; dur: string; }
+const EQBar = styled.div<EQBarProps>`
+  flex: 1;
+  background: ${C.secondary};
+  animation: ${({ h1, h2 }) => eqBounce(h1, h2)} ${({ dur }) => dur} ease-in-out infinite alternate;
+`;
+
 const DisruptBtn = styled.button`
   width: 100%;
   padding: 1rem;
@@ -200,6 +230,16 @@ const PageTitle = styled.h2`
   line-height: 1;
   margin: 0 0 1rem;
   color: ${C.onSurface};
+  position: relative;
+
+  &::after {
+    content: attr(data-text);
+    position: absolute;
+    top: 0; left: 0;
+    color: ${C.primary};
+    animation: ${glitchText} 6s steps(1) infinite;
+    pointer-events: none;
+  }
 `;
 const TitleAccent = styled.span`
   color: ${C.primary};
@@ -234,7 +274,7 @@ const Grid = styled.div`
   @media (min-width: 1024px) { grid-template-columns: repeat(3, 1fr); }
 `;
 
-interface CardAccent { accent: string; shadowHover: string; }
+interface CardAccent { accent: string; shadowHover: string; delay?: string; }
 
 const CoachCard = styled.div<CardAccent>`
   position: relative;
@@ -242,11 +282,13 @@ const CoachCard = styled.div<CardAccent>`
   border: 2px solid transparent;
   cursor: pointer;
   box-shadow: 12px 12px 0px ${C.surfaceHigh};
-  transition: none;
+  animation: ${cardEntrance} 0.5s cubic-bezier(0,1,0.5,1) both;
+  animation-delay: ${({ delay }) => delay ?? "0s"};
 
   &:hover {
     border-color: ${({ accent }) => accent};
     box-shadow: 16px 16px 0px ${({ shadowHover }) => shadowHover};
+    animation: ${staticFlicker} 0.4s steps(1) 1;
   }
   &:active { transform: translate(4px, 4px); box-shadow: 8px 8px 0px ${({ shadowHover }) => shadowHover}; }
 `;
@@ -424,6 +466,7 @@ const Home: React.FC = () => {
   return (
     <>
       <ScanlineOverlay />
+      <ScanlineSweep />
       <DecoLine1 />
       <DecoLine2 />
 
@@ -459,13 +502,21 @@ const Home: React.FC = () => {
           </SidebarItem>
         </SidebarNav>
         <SidebarFooter>
+          <EQBars>
+            <EQBar h1={20} h2={90} dur="0.4s" />
+            <EQBar h1={50} h2={70} dur="0.6s" />
+            <EQBar h1={10} h2={100} dur="0.3s" />
+            <EQBar h1={40} h2={80} dur="0.5s" />
+            <EQBar h1={30} h2={60} dur="0.7s" />
+            <EQBar h1={60} h2={95} dur="0.45s" />
+          </EQBars>
           <DisruptBtn>DISRUPT</DisruptBtn>
         </SidebarFooter>
       </Sidebar>
 
       <Main>
         <PageHeader>
-          <PageTitle>
+          <PageTitle data-text="VELG COACH">
             VELG <TitleAccent>COACH</TitleAccent>
           </PageTitle>
           <SubRow>
@@ -475,11 +526,12 @@ const Home: React.FC = () => {
         </PageHeader>
 
         <Grid>
-          {coaches.map((coach) => (
+          {coaches.map((coach, i) => (
             <CoachCard
               key={coach.key}
               accent={coach.accent}
               shadowHover={coach.shadowHover}
+              delay={`${i * 0.12}s`}
               onClick={() => navigate(`/prompt/${coach.key}`)}
             >
               <CardImageBox>
