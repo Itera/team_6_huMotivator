@@ -29,9 +29,6 @@ class CoachType(str, Enum):
     coach3 = "coach3"
 
 
-class MotivateRequest(BaseModel):
-    coach: CoachType
-    task: str = Field(default="", max_length=280)
 
 
 COACH_SYSTEM_PROMPTS = {
@@ -177,11 +174,12 @@ def models():
         raise HTTPException(status_code=502, detail=f"Ollama unavailable: {e}")
 
 
-@app.post("/motivate")
-def motivate(req: MotivateRequest):
+@app.get("/motivate")
+def motivate(
+    coach: CoachType = Query(..., description="Coach style: coach1, coach2, or coach3"),
+    task: str = Query(default="", description="Optional task to motivate about"),
+):
     """Get motivational content from a specific coach personality, optionally enriched with media."""
-    coach = req.coach
-    task = req.task
     system_prompt = COACH_SYSTEM_PROMPTS[coach] + STRUCTURED_SUFFIX
     user_prompt = (
         f"Gi meg motivasjon for denne oppgaven: {task.strip()}. Svar kort og på norsk."
