@@ -1,5 +1,8 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+
+import llm_service
 
 app = FastAPI(title="HuMotivatoren API", version="0.1.0")
 
@@ -12,6 +15,11 @@ app.add_middleware(
 )
 
 
+class MotivateRequest(BaseModel):
+    task: str
+    model: str = "llama3.2"
+
+
 @app.get("/")
 def root():
     return {"message": "Velkommen til HuMotivatoren! 🎉"}
@@ -20,3 +28,30 @@ def root():
 @app.get("/health")
 def health():
     return {"status": "ok"}
+
+
+@app.get("/models")
+async def models():
+    """List available LLM models in Ollama."""
+    try:
+        return {"models": await llm_service.list_models()}
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=f"Ollama unavailable: {e}")
+
+
+@app.post("/motivate")
+async def motivate(req: MotivateRequest):
+    """Send a task description and get motivational content back."""
+    prompt = (
+        "Du er HuMotivatoren – et profesjonelt verktøy med intelligent humor. "
+        "Brukeren trenger inspirasjon og motivasjon. Svar med en blanding av "
+        "humoristiske fakta, motiverende tips og gjerne litt absurd statistikk. "
+        "Hold deg til Iteras verdier – vær inkluderende og positiv.\n\n"
+        f"Brukerens oppgave: {req.task}\n\n"
+        "Gi et motiverende, morsomt og kort svar på norsk."
+    )
+    try:
+        response = await llm_service.generate(prompt, model=req.model)
+        return {"motivation": response}
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=f"LLM error: {e}")
