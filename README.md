@@ -57,3 +57,53 @@ One team member sets up a repo on GitHub. Help each other get it running on all 
 Everyone on the team should create a PR, i.e., try at least one prompt and build something that becomes part of the solution.
 
 The goal is not perfection, but to play with AI, test, and produce a presentable (un)professional result.
+
+## MVP Scaffold (Frontend + Backend + Tests)
+
+This repository now includes a demo-ready scaffold:
+
+- Frontend demo page: `JHBFrontEnd.html`
+- Backend API: `backend/main.py` (FastAPI)
+- Tests: `backend/tests/test_main.py` (pytest)
+
+### 1. Run backend locally
+
+```bash
+cd backend
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+cp .env.example .env
+uvicorn main:app --reload --host 0.0.0.0 --port 8000
+```
+
+### 2. Open frontend
+
+Open `JHBFrontEnd.html` in your browser and click **Generate motivation**.
+The page calls `http://localhost:8000/api/motivate`.
+
+### 3. Run tests
+
+```bash
+cd backend
+source .venv/bin/activate
+pytest -q
+```
+
+### API endpoint
+
+- `POST /api/motivate`
+- Body example:
+
+```json
+{
+	"task": "Prepare demo slides",
+	"vibe": "playful"
+}
+```
+
+### Notes
+
+- Open API integration: quote + safe joke providers.
+- LLM integration: optional via `OPENAI_API_KEY`; deterministic fallback is used if key is missing.
+- Safety: lightweight text filter keeps output respectful and demo-safe.
