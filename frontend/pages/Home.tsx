@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import { useTheme } from "../components/ThemeProvider";
-import { motivate } from "../services/api";
+import { getModels, motivate } from "../services/api";
 
 const Container = styled.div`
   max-width: 500px;
@@ -23,8 +23,17 @@ const Input = styled.input`
   font-size: 1rem;
 `;
 
+const Select = styled.select`
+  width: 100%;
+  padding: 0.75rem;
+  margin-bottom: 1rem;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 1rem;
+`;
+
 const Button = styled.button`
-  background: #aa3bff;
+  background: #0f8b8d;
   color: #fff;
   border: none;
   border-radius: 6px;
@@ -33,7 +42,7 @@ const Button = styled.button`
   cursor: pointer;
   transition: background 0.2s;
   &:hover {
-    background: #7a2bbd;
+    background: #0b6f71;
   }
 `;
 
@@ -43,16 +52,35 @@ const Loader = styled.div`
 
 const Home: React.FC = () => {
   const [task, setTask] = useState("");
+  const [models, setModels] = useState<string[]>([]);
+  const [selectedModel, setSelectedModel] = useState("llama3.2");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { theme } = useTheme();
 
+  React.useEffect(() => {
+    const loadModels = async () => {
+      try {
+        const availableModels = await getModels();
+        if (availableModels.length > 0) {
+          setModels(availableModels);
+          setSelectedModel(availableModels[0]);
+        } else {
+          setModels(["llama3.2"]);
+        }
+      } catch {
+        setModels(["llama3.2"]);
+      }
+    };
+
+    loadModels();
+  }, []);
+
   const handleMotivate = async () => {
     setLoading(true);
     try {
-      // Replace {} with user settings if needed
-      const response = await motivate(task, { theme });
-      navigate("/result", { state: { result: response.data } });
+      const response = await motivate(task, selectedModel);
+      navigate("/result", { state: { result: response, theme } });
     } catch (error) {
       alert("Klarte ikke å hente motivasjon. Prøv igjen!");
     } finally {
@@ -70,6 +98,16 @@ const Home: React.FC = () => {
         value={task}
         onChange={(e) => setTask(e.target.value)}
       />
+      <Select
+        value={selectedModel}
+        onChange={(e) => setSelectedModel(e.target.value)}
+      >
+        {models.map((model) => (
+          <option key={model} value={model}>
+            {model}
+          </option>
+        ))}
+      </Select>
       <Button onClick={handleMotivate} disabled={loading || !task}>
         Motiver meg
       </Button>

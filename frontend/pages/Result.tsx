@@ -20,7 +20,7 @@ const Card = styled.div`
 `;
 
 const Button = styled.button`
-  background: #aa3bff;
+  background: #0f8b8d;
   color: #fff;
   border: none;
   border-radius: 6px;
@@ -30,7 +30,7 @@ const Button = styled.button`
   margin-top: 1rem;
   transition: background 0.2s;
   &:hover {
-    background: #7a2bbd;
+    background: #0b6f71;
   }
 `;
 
@@ -55,25 +55,13 @@ const Result: React.FC = () => {
       <h2>Resultat</h2>
       <Card>
         <strong>Motivasjon:</strong>
-        <p>{result.text || "Ingen tekst mottatt."}</p>
-        {/* Render facts, images, quotes, etc. if present */}
-        {result.facts && (
-          <div>
-            <strong>Fakta:</strong> <p>{result.facts}</p>
-          </div>
-        )}
-        {result.image && (
-          <img
-            src={result.image}
-            alt="Motivasjonsbilde"
-            style={{ maxWidth: "100%", margin: "1rem 0" }}
-          />
-        )}
-        {result.quote && (
-          <div>
-            <strong>Sitat:</strong> <p>{result.quote}</p>
-          </div>
-        )}
+        <p>{result.motivation || "Ingen tekst mottatt."}</p>
+        <div>
+          <strong>Modell:</strong> <p>{result.model_used || "ukjent"}</p>
+        </div>
+        <div>
+          <strong>Sikkerhet:</strong> <p>{result.safety_note || "ingen"}</p>
+        </div>
       </Card>
       <Button onClick={() => navigate("/")}>Få ny inspirasjon</Button>
     </Container>

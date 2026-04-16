@@ -12,11 +12,17 @@ const Container = styled.div`
 `;
 
 const Settings: React.FC = () => {
-  // TODO: Add selectors and sliders for personality, content type, humor level
   return (
     <Container>
       <h2>Innstillinger</h2>
-      <p>Velg personlighetstype, innholdstype og humornivå.</p>
+      <p>
+        Denne MVP-en bruker modellvalg fra forsiden. Neste steg er personlighet,
+        innholdstype og humornivå.
+      </p>
+      <p>
+        Tips: Start med en konkret oppgave, velg modell, og bruk resultat-siden i
+        demoen.
+      </p>
     </Container>
   );
 };
