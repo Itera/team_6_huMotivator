@@ -4,8 +4,7 @@ const GlobalStyle = createGlobalStyle`
   body {
     margin: 0;
     font-family: system-ui, 'Segoe UI', Roboto, sans-serif;
-    background: #fff;
-    color: #222;
+    /* background and color now set by ThemeProvider */
   }
 `;
 

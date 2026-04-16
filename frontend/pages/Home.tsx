@@ -1,17 +1,19 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
-import { useTheme } from "../components/ThemeProvider";
+import { useTheme, useThemeVars } from "../components/ThemeProvider";
 import { getModels, motivate } from "../services/api";
 
-const Container = styled.div`
+const Container = styled.div<{ bg: string; color: string }>`
   max-width: 500px;
   margin: 2rem auto;
   padding: 2rem;
-  background: #f8f8ff;
+  background: ${({ bg }) => bg};
+  color: ${({ color }) => color};
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
   text-align: center;
+  transition: background 0.3s, color 0.3s;
 `;
 
 const Input = styled.input`
@@ -25,23 +27,26 @@ const Input = styled.input`
 
 interface CoachButtonProps {
   selected?: boolean;
+  themeVars: any;
 }
 
 const CoachButton = styled.button<CoachButtonProps>`
-  background: ${({ selected }) => (selected ? "#aa3bff" : "#e5e4e7")};
-  color: ${({ selected }) => (selected ? "#fff" : "#222")};
-  border: ${({ selected }) =>
-    selected ? "2px solid #aa3bff" : "2px solid transparent"};
+  background: ${({ selected, themeVars }) =>
+    selected ? themeVars.buttonSelected : themeVars.button};
+  color: ${({ selected, themeVars }) =>
+    selected ? themeVars.buttonSelectedText : themeVars.buttonText};
+  border: ${({ selected, themeVars }) =>
+    selected ? `2px solid ${themeVars.buttonSelected}` : '2px solid transparent'};
   border-radius: 6px;
   padding: 0.75rem 1.5rem;
   font-size: 1rem;
   cursor: pointer;
-  transition:
-    background 0.2s,
-    border 0.2s,
-    color 0.2s;
+  transition: background 0.2s, border 0.2s, color 0.2s;
   &:hover {
-    background: ${({ selected }) => (selected ? "#7a2bbd" : "#d1cfe2")};
+    background: ${({ selected, themeVars }) =>
+      selected ? themeVars.button : themeVars.buttonSelected};
+    color: ${({ selected, themeVars }) =>
+      selected ? themeVars.buttonText : themeVars.buttonSelectedText};
   }
 `;
 
@@ -61,9 +66,9 @@ const Loader = styled.div`
 `;
 
 const coaches = [
-  { key: "serious", name: "Seriøs Coach" },
-  { key: "clown", name: "Kontorklovn" },
-  { key: "zen", name: "Zen-mester" },
+  { key: "military", name: "Militærleder", description: "Streng, disiplinert og motiverer med tøff kjærlighet." },
+  { key: "psychologist", name: "Psykolog", description: "Lyttende, forståelsesfull og hjelper deg å finne din indre motivasjon." },
+  { key: "artist", name: "Spirituell Kunstner", description: "Gir deg kreative og kosmiske råd, som å klappe en rosa stein fordi stjernene står rett." },
 ];
 
 const Home: React.FC = () => {
@@ -74,6 +79,7 @@ const Home: React.FC = () => {
   const [selectedCoach, setSelectedCoach] = useState<string>("serious");
   const navigate = useNavigate();
   const { theme, setTheme } = useTheme();
+  const themeVars = useThemeVars();
 
   const handleCoachSelect = (coachKey: string) => {
     setSelectedCoach(coachKey);
@@ -111,7 +117,7 @@ const Home: React.FC = () => {
   };
 
   return (
-    <Container>
+    <Container bg={themeVars.background} color={themeVars.color}>
       <h1>HuMotivatoren</h1>
       <p>Beskriv oppgaven din og få motivasjon!</p>
 
@@ -124,6 +130,7 @@ const Home: React.FC = () => {
               type="button"
               selected={selectedCoach === coach.key}
               onClick={() => handleCoachSelect(coach.key)}
+              themeVars={themeVars}
             >
               {coach.name}
             </CoachButton>
@@ -137,7 +144,7 @@ const Home: React.FC = () => {
         value={task}
         onChange={(e) => setTask(e.target.value)}
       />
-      <CoachButton onClick={handleMotivate} disabled={loading || !task}>
+  <CoachButton onClick={handleMotivate} disabled={loading || !task} themeVars={themeVars}>
         Motiver meg
       </CoachButton>
       {loading && <Loader>Laster motivasjon...</Loader>}
