@@ -1,0 +1,45 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  backend-tests:
+    runs-on: ubuntu-latest
+    name: Backend Tests (pytest)
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build backend test image
+        working-directory: ./backend
+        run: docker build -t humotivator-backend-test .
+
+      - name: Run pytest
+        run: docker run --rm humotivator-backend-test pytest -q
+
+  frontend-build:
+    runs-on: ubuntu-latest
+    name: Frontend Build & Type Check
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install dependencies
+        working-directory: ./frontend
+        run: npm install
+
+      - name: Build frontend
+        working-directory: ./frontend
+        run: npm run build
+
+      - name: Lint
+        working-directory: ./frontend
+        run: npm run lint
+        continue-on-error: true
