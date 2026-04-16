@@ -4,6 +4,7 @@ import styled from "styled-components";
 import {
   neonFlicker, glitchText, scanlineSweep, cardEntrance,
   driftRight, driftLeft, eqBounce, staticFlicker, glowPulse,
+  crtBoot, gridScroll, floatUp, rgbSplit, borderChase,
 } from "../components/animations";
 import SynthPlayer from "../components/SynthPlayer";
 
@@ -68,6 +69,70 @@ const DecoLine2 = styled.div`
   opacity: 0.08;
   pointer-events: none;
   animation: ${driftLeft} 10s ease-in-out infinite alternate;
+`;
+
+// ── CRT boot wrapper ────────────────────────────────────────────────────────
+const CRTBoot = styled.div`
+  animation: ${crtBoot} 1.2s cubic-bezier(0.22,1,0.36,1) both;
+  transform-origin: center center;
+`;
+
+// ── Perspective synthwave grid ───────────────────────────────────────────────
+const RetroGrid = styled.div`
+  pointer-events: none;
+  position: fixed;
+  bottom: 0; left: 0; width: 100%; height: 55vh;
+  z-index: 0;
+  overflow: hidden;
+  &::after {
+    content: '';
+    display: block;
+    width: 100%; height: 100%;
+    background-image:
+      linear-gradient(rgba(195,244,0,0.18) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(195,244,0,0.18) 1px, transparent 1px);
+    background-size: 60px 60px;
+    transform: perspective(300px) rotateX(70deg);
+    transform-origin: bottom center;
+    animation: ${gridScroll} 3s linear infinite;
+  }
+  /* horizon fade */
+  mask-image: linear-gradient(to bottom, transparent 0%, black 35%, black 100%);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 35%, black 100%);
+`;
+
+// ── VHS timestamp ─────────────────────────────────────────────────────────────
+const VHSStamp = styled.div`
+  font-family: 'Space Grotesk', monospace;
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: ${C.error};
+  opacity: 0.7;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  user-select: none;
+`;
+const RecDot = styled.span`
+  display: inline-block;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: ${C.error};
+  animation: ${glowPulse} 1s ease-in-out infinite;
+`;
+
+// ── Floating particles ────────────────────────────────────────────────────────
+const Particle = styled.span<{ x: number; delay: number; dur: number }>`
+  pointer-events: none;
+  position: fixed;
+  bottom: 15%;
+  left: ${({ x }) => x}%;
+  width: 3px; height: 3px;
+  border-radius: 50%;
+  background: ${C.secondary};
+  animation: ${floatUp} ${({ dur }) => dur}s ease-in-out ${({ delay }) => delay}s infinite;
+  z-index: 0;
 `;
 
 const Header = styled.header`
@@ -232,6 +297,7 @@ const PageTitle = styled.h2`
   margin: 0 0 0.5rem;
   color: ${C.onSurface};
   position: relative;
+  animation: ${rgbSplit} 7s steps(1) infinite;
 
   &::after {
     content: attr(data-text);
@@ -285,17 +351,20 @@ const CoachCard = styled.div<CardAccent>`
   box-shadow: 12px 12px 0px ${C.surfaceHigh};
   animation: ${cardEntrance} 0.5s cubic-bezier(0,1,0.5,1) both;
   animation-delay: ${({ delay }) => delay ?? "0s"};
+  transition: transform 0.15s, border-color 0.15s;
 
   &:hover {
     border-color: ${({ accent }) => accent};
-    box-shadow: 16px 16px 0px ${({ shadowHover }) => shadowHover};
+    box-shadow: 16px 16px 0px ${({ shadowHover }) => shadowHover}, 0 0 30px ${({ accent }) => accent}66;
+    transform: translateY(-3px);
     animation: ${staticFlicker} 0.4s steps(1) 1;
+    color: ${({ accent }) => accent};
   }
   &:active { transform: translate(4px, 4px); box-shadow: 8px 8px 0px ${({ shadowHover }) => shadowHover}; }
 `;
 
 const CardImageBox = styled.div`
-  height: 120px;
+  aspect-ratio: 1;
   overflow: hidden;
   background: ${C.surfaceLow};
   position: relative;
@@ -314,6 +383,19 @@ const CardImagePlaceholder = styled.div<{ color: string }>`
   color: ${({ color }) => color};
   opacity: 0.4;
   text-shadow: 0 0 40px currentColor;
+`;
+
+const CoachImage = styled.img`
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  filter: grayscale(1) contrast(1.2);
+  transition: filter 0.15s steps(1);
+
+  &:hover {
+    filter: none;
+  }
 `;
 
 const GradientOverlay = styled.div`
@@ -430,6 +512,8 @@ const coaches = [
     levelColor: C.error,
     icon: "military_tech",
     symbol: "⚔",
+    image: "/coach-drill-sergeant.jpg",
+    imageAlt: "The Drill Sergeant",
   },
   {
     key: "coach2",
@@ -444,6 +528,8 @@ const coaches = [
     levelColor: C.primary,
     icon: "psychology",
     symbol: "☯",
+    image: "/coach-zen-psych.jpg",
+    imageAlt: "The Zen Psychologist",
   },
   {
     key: "coach3",
@@ -458,18 +544,39 @@ const coaches = [
     levelColor: C.tertiary,
     icon: "change_history",
     symbol: "✦",
+    image: "/coach-crystal-mystic.jpg",
+    imageAlt: "The Crystal Mystic",
   },
+];
+
+const PARTICLES = [
+  { x: 8,  delay: 0,   dur: 4 },
+  { x: 18, delay: 1.5, dur: 5 },
+  { x: 32, delay: 0.7, dur: 3.5 },
+  { x: 48, delay: 2.2, dur: 4.5 },
+  { x: 61, delay: 0.3, dur: 5.5 },
+  { x: 75, delay: 1.1, dur: 4 },
+  { x: 88, delay: 2.8, dur: 3 },
+  { x: 95, delay: 0.9, dur: 6 },
 ];
 
 const Home: React.FC = () => {
   const navigate = useNavigate();
+  const [time, setTime] = React.useState(() => new Date());
+  React.useEffect(() => {
+    const id = setInterval(() => setTime(new Date()), 1000);
+    return () => clearInterval(id);
+  }, []);
+  const ts = time.toTimeString().slice(0, 8);
 
   return (
-    <>
+    <CRTBoot>
       <ScanlineOverlay />
       <ScanlineSweep />
+      <RetroGrid />
       <DecoLine1 />
       <DecoLine2 />
+      {PARTICLES.map((p, i) => <Particle key={i} x={p.x} delay={p.delay} dur={p.dur} />)}
 
       <Header>
         <div style={{ display: "flex", alignItems: "center", gap: "2rem" }}>
@@ -480,6 +587,7 @@ const Home: React.FC = () => {
             <NavLink href="#">FREQUENCIES</NavLink>
           </HeaderNav>
         </div>
+        <VHSStamp><RecDot />REC&nbsp;{ts}</VHSStamp>
         <span className="material-symbols-outlined" style={{ color: C.onSurface, cursor: "pointer" }}>settings</span>
         <SynthPlayer />
       </Header>
@@ -537,9 +645,7 @@ const Home: React.FC = () => {
               onClick={() => navigate(`/prompt/${coach.key}`)}
             >
               <CardImageBox>
-                <CardImagePlaceholder color={coach.accent}>
-                  {coach.symbol}
-                </CardImagePlaceholder>
+                <CoachImage src={coach.image} alt={coach.imageAlt} />
                 <GradientOverlay />
                 <Badge color={coach.badgeColor} textColor={coach.badgeText}>
                   {coach.badge}
@@ -566,7 +672,7 @@ const Home: React.FC = () => {
         <BottomNavItem href="#"><span className="material-symbols-outlined">tune</span><BottomNavLabel>MIX</BottomNavLabel></BottomNavItem>
         <BottomNavItem href="#"><span className="material-symbols-outlined">settings_input_component</span><BottomNavLabel>GEAR</BottomNavLabel></BottomNavItem>
       </BottomNav>
-    </>
+    </CRTBoot>
   );
 };
 
