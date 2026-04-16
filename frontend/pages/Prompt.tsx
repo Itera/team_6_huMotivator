@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import styled, { keyframes } from "styled-components";
+import styled from "styled-components";
 import { motivate } from "../services/api";
+import { neonFlicker, scanlineSweep, blink, buttonShake, glowPulse } from "../components/animations";
 
 const C = {
   bg:          "#131313",
@@ -61,7 +62,8 @@ const Logo = styled.h1`
   letter-spacing: -0.04em;
   color: ${C.primary};
   margin: 0;
-  text-shadow: 0 0 12px rgba(255,0,255,0.6);
+  animation: ${neonFlicker} 8s infinite;
+  cursor: default;
 `;
 
 const BackBtn = styled.button`
@@ -120,7 +122,8 @@ const CoachSymbol = styled.div<{ color: string }>`
   border: 2px solid ${({ color }) => color};
   color: ${({ color }) => color};
   font-size: 1.5rem;
-  box-shadow: 4px 4px 0px ${({ color }) => color}55;
+  animation: ${glowPulse} 2s ease-in-out infinite;
+  color: ${({ color }) => color};
 `;
 
 const PageTitle = styled.h2`
@@ -173,9 +176,6 @@ const TaskInput = styled.input`
   &:focus { border-bottom-color: ${C.secondary}; }
 `;
 
-const pulse = keyframes`
-  0%,100% { opacity:1; } 50% { opacity:0.5; }
-`;
 
 const SubmitBtn = styled.button<{ accent: string }>`
   background: ${C.primary};
@@ -192,7 +192,10 @@ const SubmitBtn = styled.button<{ accent: string }>`
   box-shadow: 6px 6px 0px ${({ accent }) => accent};
   transition: none;
 
-  &:hover:not(:disabled) { box-shadow: 8px 8px 0px ${C.tertiary}; }
+  &:hover:not(:disabled) {
+    animation: ${buttonShake} 0.3s steps(1) 1;
+    box-shadow: 8px 8px 0px ${C.tertiary};
+  }
   &:active:not(:disabled) { transform: translate(4px,4px); box-shadow: 2px 2px 0px ${({ accent }) => accent}; }
   &:disabled { opacity: 0.45; cursor: not-allowed; }
 `;
@@ -200,7 +203,7 @@ const SubmitBtn = styled.button<{ accent: string }>`
 const LoadingText = styled.span`
   font-size: 0.85rem;
   letter-spacing: 0.2em;
-  animation: ${pulse} 0.8s infinite;
+  animation: ${neonFlicker} 0.8s infinite;
 `;
 
 const HintRow = styled.div`
@@ -221,6 +224,25 @@ const HintText = styled.p`
   text-transform: uppercase;
   letter-spacing: 0.15em;
   margin: 0;
+`;
+
+const ScanlineSweep = styled.div`
+  pointer-events: none;
+  position: fixed;
+  left: 0; width: 100%; height: 8px;
+  z-index: 1;
+  background: linear-gradient(to bottom, transparent, rgba(195,244,0,0.15), transparent);
+  animation: ${scanlineSweep} 6s linear infinite;
+`;
+
+const BlinkCursor = styled.span`
+  display: inline-block;
+  width: 3px;
+  height: 1.2em;
+  background: ${C.secondary};
+  margin-left: 4px;
+  vertical-align: text-bottom;
+  animation: ${blink} 0.8s step-end infinite;
 `;
 
 const Prompt: React.FC = () => {
@@ -246,6 +268,7 @@ const Prompt: React.FC = () => {
   return (
     <>
       <ScanlineOverlay />
+      <ScanlineSweep />
       <Header>
         <Logo>HUMOTIVATOREN</Logo>
         <BackBtn onClick={() => navigate("/")}>
@@ -265,6 +288,7 @@ const Prompt: React.FC = () => {
 
         <PageTitle>
           HVA SKAL DU <TitleAccent color={meta.accent}>GJØRE?</TitleAccent>
+          <BlinkCursor />
         </PageTitle>
 
         <InputArea>
