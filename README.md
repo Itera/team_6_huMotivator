@@ -57,3 +57,4 @@ One team member sets up a repo on GitHub. Help each other get it running on all 
 Everyone on the team should create a PR, i.e., try at least one prompt and build something that becomes part of the solution.
 
 The goal is not perfection, but to play with AI, test, and produce a presentable (un)professional result.
+
