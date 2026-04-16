@@ -93,3 +93,12 @@ cd backend
 docker build -t humotivator-backend-test .
 docker run --rm humotivator-backend-test pytest -q
 ```
+
+## CI/CD
+
+GitHub Actions workflow (`.github/workflows/ci.yml`) automatically:
+- Runs backend tests (pytest) on every push and PR to `main`
+- Builds the frontend and runs type checks
+- Runs ESLint for code quality
+
+Check workflow status on the [Actions](../../actions) tab.
