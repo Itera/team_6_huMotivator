@@ -3,25 +3,34 @@ import styled, { keyframes, css } from "styled-components";
 import * as Tone from "tone";
 
 // ─── constants ────────────────────────────────────────────────────────────────
-const BPM = 118;
+const BPM = 132;
 
-// 8-bar Cm chord progression (Cm → Ab → Eb → Bb), each bar = 8 8th-note steps
+// 16th-note arpeggio — Cm → Ab → Eb → Bb (4 bars × 16 steps)
 const ARP_SEQUENCE = [
   // Cm
-  "C4","Eb4","G4","Bb4","C5","Bb4","G4","Eb4",
+  "C4","G4","Eb4","Bb4","C5","G4","Eb5","Bb4",
+  "C4","G4","Eb4","C5","Bb4","G4","Eb4","C4",
   // Ab
-  "Ab4","C5","Eb5","G5","Ab5","G5","Eb5","C5",
+  "Ab4","Eb5","C5","Ab4","Eb5","C5","Ab5","Eb5",
+  "Ab4","C5","Eb5","Ab4","G5","Eb5","C5","Ab4",
   // Eb
-  "Eb4","G4","Bb4","D5","Eb5","D5","Bb4","G4",
+  "Eb4","Bb4","G4","Eb5","Bb4","G5","Eb4","Bb4",
+  "Eb5","G4","Bb4","Eb4","D5","Bb4","G4","Eb4",
   // Bb
-  "Bb3","D4","F4","Ab4","Bb4","Ab4","F4","D4",
+  "Bb3","F4","D4","Bb4","F4","D5","Bb3","F4",
+  "Bb4","D4","F4","Bb3","Ab4","F4","D4","Bb3",
 ];
 
-const BASS_SEQUENCE = [
-  "C2","C2","C2","C2","C2","C2","C2","C2",
-  "Ab1","Ab1","Ab1","Ab1","Ab1","Ab1","Ab1","Ab1",
-  "Eb2","Eb2","Eb2","Eb2","Eb2","Eb2","Eb2","Eb2",
-  "Bb1","Bb1","Bb1","Bb1","Bb1","Bb1","Bb1","Bb1",
+// Bass hits on every beat root
+const BASS_BEATS = ["C2","C2","C2","C2","Ab1","Ab1","Ab1","Ab1",
+                    "Eb2","Eb2","Eb2","Eb2","Bb1","Bb1","Bb1","Bb1"];
+
+// Pad chords — one per bar (PolySynth notes)
+const PAD_CHORDS = [
+  ["C3","Eb3","G3","Bb3"],
+  ["Ab2","C3","Eb3","G3"],
+  ["Eb3","G3","Bb3","D4"],
+  ["Bb2","D3","F3","Ab3"],
 ];
 
 // ─── styled components ────────────────────────────────────────────────────────
@@ -78,100 +87,134 @@ const SynthPlayer: React.FC = () => {
   const bassRef  = useRef<Tone.Sequence | null>(null);
   const kickRef  = useRef<Tone.Sequence | null>(null);
   const hatRef   = useRef<Tone.Sequence | null>(null);
+  const snareRef = useRef<Tone.Sequence | null>(null);
+  const padRef   = useRef<Tone.Sequence | null>(null);
   const synthRef = useRef<Tone.Synth | null>(null);
   const bassSnth = useRef<Tone.Synth | null>(null);
   const kickSnth = useRef<Tone.MembraneSynth | null>(null);
   const hatSnth  = useRef<Tone.MetalSynth | null>(null);
+  const snareSnth= useRef<Tone.NoiseSynth | null>(null);
+  const padSnth  = useRef<Tone.PolySynth | null>(null);
 
   const start = useCallback(async () => {
     await Tone.start();
     Tone.getTransport().bpm.value = BPM;
 
-    // ── reverb / chorus FX ──────────────────────────────────────────────────
-    const reverb  = new Tone.Reverb({ decay: 2.5, wet: 0.25 }).toDestination();
-    const chorus  = new Tone.Chorus(4, 2.5, 0.5).toDestination().start();
-    const limiter = new Tone.Limiter(-3).toDestination();
+    // ── master chain: compressor → limiter ──────────────────────────────────
+    const comp    = new Tone.Compressor({ threshold: -18, ratio: 6, attack: 0.003, release: 0.1 }).toDestination();
+    const limiter = new Tone.Limiter(-2).connect(comp);
 
-    // ── lead arpeggio synth (sawtooth → filtered) ────────────────────────────
-    const filter = new Tone.Filter({ frequency: 3200, type: "lowpass" }).connect(reverb).connect(limiter);
-    const lead   = new Tone.Synth({
+    // ── FX ──────────────────────────────────────────────────────────────────
+    const reverb  = new Tone.Reverb({ decay: 1.8, wet: 0.2 }).connect(limiter);
+    const chorus  = new Tone.Chorus(3, 2, 0.4).connect(limiter).start();
+    const distort = new Tone.Distortion(0.35).connect(limiter);
+
+    // ── lead arpeggio: sawtooth, 16th notes, filtered ───────────────────────
+    const leadFilter = new Tone.Filter({ frequency: 4800, type: "lowpass", rolloff: -24 }).connect(reverb).connect(chorus);
+    const lead = new Tone.Synth({
       oscillator: { type: "sawtooth" },
-      envelope:   { attack: 0.01, decay: 0.12, sustain: 0.25, release: 0.4 },
-      volume: -14,
-    }).connect(filter).connect(chorus);
+      envelope:   { attack: 0.005, decay: 0.08, sustain: 0.2, release: 0.25 },
+      volume: -12,
+    }).connect(leadFilter);
     synthRef.current = lead;
 
     let arpIdx = 0;
     const arpSeq = new Tone.Sequence(
-      (time) => {
-        lead.triggerAttackRelease(ARP_SEQUENCE[arpIdx % ARP_SEQUENCE.length], "8n", time);
-        arpIdx++;
-      },
-      new Array(ARP_SEQUENCE.length).fill(0),
-      "8n"
+      (time) => { lead.triggerAttackRelease(ARP_SEQUENCE[arpIdx++ % ARP_SEQUENCE.length], "16n", time); },
+      new Array(ARP_SEQUENCE.length).fill(0), "16n"
     );
     seqRef.current = arpSeq;
 
-    // ── bass synth (square, an octave lower) ─────────────────────────────────
-    const bassFilter = new Tone.Filter({ frequency: 600, type: "lowpass" }).connect(limiter);
+    // ── bass: square wave + distortion, punchy short decay ──────────────────
+    const bassFilter = new Tone.Filter({ frequency: 500, type: "lowpass" }).connect(distort).connect(limiter);
     const bass = new Tone.Synth({
       oscillator: { type: "square" },
-      envelope:   { attack: 0.02, decay: 0.3, sustain: 0.6, release: 0.8 },
-      volume: -10,
+      envelope:   { attack: 0.005, decay: 0.15, sustain: 0.5, release: 0.3 },
+      volume: -6,
     }).connect(bassFilter);
     bassSnth.current = bass;
 
     let bassIdx = 0;
     const bassSeq = new Tone.Sequence(
-      (time) => {
-        bass.triggerAttackRelease(BASS_SEQUENCE[bassIdx % BASS_SEQUENCE.length], "4n", time);
-        bassIdx += 2; // one bass note per quarter note
-      },
-      new Array(BASS_SEQUENCE.length / 2).fill(0),
-      "4n"
+      (time) => { bass.triggerAttackRelease(BASS_BEATS[bassIdx++ % BASS_BEATS.length], "8n", time); },
+      new Array(BASS_BEATS.length).fill(0), "4n"
     );
     bassRef.current = bassSeq;
 
-    // ── kick drum ─────────────────────────────────────────────────────────────
+    // ── pad: polyphonic, detuned, swells each bar ────────────────────────────
+    const padReverb = new Tone.Reverb({ decay: 4, wet: 0.6 }).connect(limiter);
+    const pad = new Tone.PolySynth(Tone.Synth, {
+      oscillator: { type: "sawtooth" },
+      envelope:   { attack: 0.4, decay: 0.3, sustain: 0.8, release: 2 },
+      volume: -20,
+    }).connect(padReverb);
+    padSnth.current = pad;
+
+    let padIdx = 0;
+    const padSeq = new Tone.Sequence(
+      (time) => {
+        const chord = PAD_CHORDS[padIdx % PAD_CHORDS.length];
+        pad.triggerAttackRelease(chord, "1m", time);
+        padIdx++;
+      },
+      new Array(PAD_CHORDS.length).fill(0), "1m"
+    );
+    padRef.current = padSeq;
+
+    // ── kick: tight and punchy ────────────────────────────────────────────────
     const kick = new Tone.MembraneSynth({
-      pitchDecay: 0.05,
-      octaves: 8,
-      envelope: { attack: 0.001, decay: 0.35, sustain: 0, release: 0.1 },
-      volume: -8,
+      pitchDecay:  0.04,
+      octaves:     10,
+      envelope:    { attack: 0.001, decay: 0.28, sustain: 0, release: 0.05 },
+      volume:      -4,
     }).connect(limiter);
     kickSnth.current = kick;
 
-    // beats 1 and 3 in 4/4
+    // kick on every beat (4/4)
     const kickSeq = new Tone.Sequence(
-      (time, val) => { if (val) kick.triggerAttackRelease("C1", "8n", time); },
-      [1, 0, 0, 0, 1, 0, 0, 0],
-      "8n"
+      (time, v) => { if (v) kick.triggerAttackRelease("C1", "8n", time); },
+      [1,0,0,0, 1,0,0,0, 1,0,0,0, 1,0,0,0], "16n"
     );
     kickRef.current = kickSeq;
 
-    // ── hi-hat ────────────────────────────────────────────────────────────────
+    // ── snare: beats 2 & 4 ────────────────────────────────────────────────────
+    const snare = new Tone.NoiseSynth({
+      noise:    { type: "white" },
+      envelope: { attack: 0.001, decay: 0.18, sustain: 0, release: 0.05 },
+      volume:   -10,
+    }).connect(limiter);
+    snareSnth.current = snare;
+
+    const snareSeq = new Tone.Sequence(
+      (time, v) => { if (v) snare.triggerAttackRelease("16n", time); },
+      [0,0,0,0, 1,0,0,0, 0,0,0,0, 1,0,0,0], "16n"
+    );
+    snareRef.current = snareSeq;
+
+    // ── hi-hats: 16th notes, accented on 8ths ─────────────────────────────────
     const hat = new Tone.MetalSynth({
-      frequency: 400,
-      envelope:  { attack: 0.001, decay: 0.08, release: 0.01 },
-      harmonicity: 5.1,
+      frequency:      400,
+      envelope:       { attack: 0.001, decay: 0.06, release: 0.01 },
+      harmonicity:    5.1,
       modulationIndex: 32,
-      resonance: 4000,
-      octaves: 1.5,
-      volume: -20,
+      resonance:      4000,
+      octaves:        1.5,
+      volume:         -22,
     }).connect(limiter);
     hatSnth.current = hat;
 
     const hatSeq = new Tone.Sequence(
-      (time, val) => { if (val) hat.triggerAttackRelease("8n", time); },
-      [0, 1, 0, 1, 0, 1, 0, 1],
-      "8n"
+      (time, v) => { if (v) hat.triggerAttackRelease("16n", time); },
+      [1,0.4,1,0.4, 1,0.4,1,0.4, 1,0.4,1,0.4, 1,0.4,1,0.4], "16n"
     );
     hatRef.current = hatSeq;
 
-    // ── start all ─────────────────────────────────────────────────────────────
+    // ── start everything ──────────────────────────────────────────────────────
     arpSeq.start(0);
     bassSeq.start(0);
+    padSeq.start(0);
     kickSeq.start(0);
+    snareSeq.start(0);
     hatSeq.start(0);
     Tone.getTransport().start();
     setPlaying(true);
@@ -179,20 +222,8 @@ const SynthPlayer: React.FC = () => {
 
   const stop = useCallback(() => {
     Tone.getTransport().stop();
-    seqRef.current?.stop();
-    bassRef.current?.stop();
-    kickRef.current?.stop();
-    hatRef.current?.stop();
-    seqRef.current?.dispose();
-    bassRef.current?.dispose();
-    kickRef.current?.dispose();
-    hatRef.current?.dispose();
-    synthRef.current?.dispose();
-    bassSnth.current?.dispose();
-    kickSnth.current?.dispose();
-    hatSnth.current?.dispose();
-    seqRef.current = bassRef.current = kickRef.current = hatRef.current = null;
-    synthRef.current = bassSnth.current = kickSnth.current = hatSnth.current = null;
+    [seqRef, bassRef, kickRef, hatRef, snareRef, padRef].forEach(r => { r.current?.stop(); r.current?.dispose(); r.current = null; });
+    [synthRef, bassSnth, kickSnth, hatSnth, snareSnth, padSnth].forEach(r => { r.current?.dispose(); r.current = null; });
     setPlaying(false);
   }, []);
 
