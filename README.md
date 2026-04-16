@@ -70,10 +70,16 @@ The repository now includes:
 
 ```bash
 cd backend
+cp .env.example .env
 docker compose up --build
 ```
 
 Backend is available at `http://localhost:8000`.
+
+The backend uses:
+- Ollama (LLM) for motivational responses.
+- YouTube search API for video suggestions.
+- Spotify API for music suggestions (optional credentials; coach-specific fallback tracks are returned if credentials are missing).
 
 ### Run frontend
 
@@ -85,6 +91,7 @@ npm run dev
 ```
 
 Open the local Vite URL and test the full flow from Home to Result.
+Result view now shows motivation text plus video and music enrichment from backend open-API integrations.
 
 ### Run tests
 

@@ -2,6 +2,7 @@ import React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import { neonFlicker, glitchText, scanlineSweep, cardEntrance, buttonShake } from "../components/animations";
+import type { MotivateResponse } from "../services/api";
 
 const C = {
   bg:          "#131313",
@@ -220,7 +221,6 @@ const MediaArtist = styled.p`
   margin: 0.2rem 0 0;
   color: ${C.onSurfaceVar};
 `;
-
 const ButtonRow = styled.div`
   display: flex;
   gap: 1rem;
@@ -276,7 +276,7 @@ const FallbackBanner = styled.div`
 const Result: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const result   = location.state?.result;
+  const result = (location.state?.result as MotivateResponse | undefined);
   const coach    = location.state?.coach ?? "coach1";
   const coachName = location.state?.coachName ?? "Coach";
   const isFallback = location.state?.isFallback ?? false;

@@ -23,6 +23,12 @@ export interface MotivateResponse {
   spotify?: SpotifyResult;
 }
 
+export interface PoemResponse {
+  poem: string;
+  model_used: string;
+  safety_note: string;
+}
+
 export async function motivate(coach: string, task: string): Promise<MotivateResponse> {
   const response = await fetch(`${API_BASE}/motivate`, {
     method: "POST",
@@ -38,4 +44,16 @@ export async function getModels(): Promise<string[]> {
   if (!response.ok) throw new Error(`Could not fetch models (${response.status})`);
   const payload = (await response.json()) as { models?: string[] };
   return Array.isArray(payload.models) ? payload.models : [];
+}
+
+export async function poem(topic: string, model: string = "gemma3:1b"): Promise<PoemResponse> {
+  const response = await fetch(`${API_BASE}/poem`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ topic, model }),
+  });
+
+  if (!response.ok) throw new Error(`Backend error (${response.status})`);
+
+  return response.json();
 }
