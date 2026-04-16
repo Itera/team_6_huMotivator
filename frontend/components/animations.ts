@@ -87,3 +87,42 @@ export const blink = keyframes`
   0%, 100% { opacity: 1; }
   50%       { opacity: 0; }
 `;
+
+// CRT power-on — horizontal line expands to full screen
+export const crtBoot = keyframes`
+  0%   { transform: scaleY(0.002) scaleX(1);   opacity: 1; filter: brightness(8); }
+  15%  { transform: scaleY(0.01)  scaleX(1);   opacity: 1; filter: brightness(4); }
+  40%  { transform: scaleY(1)     scaleX(1.02); opacity: 1; filter: brightness(1.5); }
+  70%  { transform: scaleY(1)     scaleX(1);   opacity: 1; filter: brightness(1); }
+  100% { transform: scaleY(1)     scaleX(1);   opacity: 1; filter: none; }
+`;
+
+// Perspective grid scroll — tiles moving toward viewer
+export const gridScroll = keyframes`
+  from { background-position: 50% 0%; }
+  to   { background-position: 50% 100%; }
+`;
+
+// Floating particle drift
+export const floatUp = keyframes`
+  0%   { transform: translateY(0)   translateX(0)   scale(1);   opacity: 0.6; }
+  50%  { transform: translateY(-40px) translateX(8px)  scale(1.2); opacity: 1; }
+  100% { transform: translateY(-90px) translateX(-4px) scale(0.8); opacity: 0; }
+`;
+
+// RGB chromatic aberration on text
+export const rgbSplit = keyframes`
+  0%,100% { text-shadow: none; }
+  10%      { text-shadow: -3px 0 #ff00ff, 3px 0 #00daf3; }
+  20%      { text-shadow: 3px 0 #c3f400, -3px 0 #ff00ff; }
+  30%      { text-shadow: none; }
+`;
+
+// Neon border chase — glow pulses around card perimeter
+export const borderChase = keyframes`
+  0%   { box-shadow: 0 -2px 12px currentColor,  0 0 0 transparent; }
+  25%  { box-shadow: 2px 0 12px currentColor,   0 0 0 transparent; }
+  50%  { box-shadow: 0 2px 12px currentColor,   0 0 0 transparent; }
+  75%  { box-shadow: -2px 0 12px currentColor,  0 0 0 transparent; }
+  100% { box-shadow: 0 -2px 12px currentColor,  0 0 0 transparent; }
+`;
