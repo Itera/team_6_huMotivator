@@ -32,7 +32,16 @@ def test_motivate_ok_plain_text(monkeypatch):
     def fake_chat(messages: list, model: str = "gemma3:1b"):
         return "Du klarer dette. Start med ett konkret steg."
 
+    def fake_search(query, limit=1):
+        return {
+            "type": "youtube",
+            "title": "Fallback video",
+            "url": "https://www.youtube.com/watch?v=fb1",
+            "thumbnail": "",
+        }
+
     monkeypatch.setattr(main.llm_service, "chat", fake_chat)
+    monkeypatch.setattr(main.youtube_service, "search_video", fake_search)
 
     response = client.get("/motivate?coach=coach1&task=Forberede+presentasjon")
 
@@ -41,7 +50,7 @@ def test_motivate_ok_plain_text(monkeypatch):
     assert "motivation" in payload
     assert payload["coach"] == "coach1"
     assert payload["safety_note"] == "Tone OK"
-    assert "media" not in payload
+    assert payload["media"]["type"] == "youtube"
 
 
 def test_motivate_ok_with_media(monkeypatch):
@@ -75,7 +84,7 @@ def test_motivate_ok_with_media(monkeypatch):
 
 
 def test_motivate_ok_media_none(monkeypatch):
-    """LLM returns JSON with media type 'none' – no media in response."""
+    """LLM returns JSON with media type 'none' – fallback search still provides media."""
     import json as _json
 
     def fake_chat(messages: list, model: str = "gemma3:1b"):
@@ -84,21 +93,39 @@ def test_motivate_ok_media_none(monkeypatch):
             "media": {"type": "none", "query": ""}
         })
 
+    def fake_search(query, limit=1):
+        return {
+            "type": "youtube",
+            "title": "Les bok motivasjon",
+            "url": "https://www.youtube.com/watch?v=fallback",
+            "thumbnail": "https://i.ytimg.com/vi/fallback/default.jpg",
+        }
+
     monkeypatch.setattr(main.llm_service, "chat", fake_chat)
+    monkeypatch.setattr(main.youtube_service, "search_video", fake_search)
 
     response = client.get("/motivate?coach=coach1&task=Les+bok")
 
     assert response.status_code == 200
     payload = response.json()
     assert payload["motivation"] == "Bare gjør det."
-    assert "media" not in payload
+    assert payload["media"]["type"] == "youtube"
 
 
 def test_motivate_without_task(monkeypatch):
     def fake_chat(messages: list, model: str = "gemma3:1b"):
         return "Du er sterkere enn du tror!"
 
+    def fake_search(query, limit=1):
+        return {
+            "type": "youtube",
+            "title": "Motivasjon",
+            "url": "https://www.youtube.com/watch?v=notask",
+            "thumbnail": "",
+        }
+
     monkeypatch.setattr(main.llm_service, "chat", fake_chat)
+    monkeypatch.setattr(main.youtube_service, "search_video", fake_search)
 
     response = client.get("/motivate?coach=coach2")
 
@@ -115,7 +142,11 @@ def test_motivate_safety_filter(monkeypatch):
             "media": {"type": "none", "query": ""}
         })
 
+    def fake_search(query, limit=1):
+        return None
+
     monkeypatch.setattr(main.llm_service, "chat", fake_chat)
+    monkeypatch.setattr(main.youtube_service, "search_video", fake_search)
 
     response = client.get("/motivate?coach=coach1&task=Skrive+rapport")
 

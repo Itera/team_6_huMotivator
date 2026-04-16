@@ -158,12 +158,16 @@ def motivate(
 
         safe_text, filtered = _apply_safety_filter(motivation_text)
 
-        # Enrich with YouTube when the model recommends it
-        media_result = None
+        # Always enrich with a YouTube video.
+        # Use the LLM-suggested query when available, otherwise fall back
+        # to the user task combined with coach-specific keywords.
+        bias = COACH_MEDIA_BIAS.get(coach, "")
         if media_type == "youtube" and media_query:
-            bias = COACH_MEDIA_BIAS.get(coach, "")
-            enriched_query = f"{media_query} {bias}".strip()
-            media_result = youtube_service.search_video(enriched_query)
+            search_query = f"{media_query} {bias}".strip()
+        else:
+            fallback = task.strip() if task.strip() else "motivasjon"
+            search_query = f"{fallback} {bias}".strip()
+        media_result = youtube_service.search_video(search_query)
 
         result: dict = {
             "motivation": safe_text,
