@@ -2,6 +2,7 @@ import React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import { neonFlicker, glitchText, scanlineSweep, cardEntrance, buttonShake } from "../components/animations";
+import type { MotivateResponse } from "../services/api";
 
 const C = {
   bg:          "#131313",
@@ -151,6 +152,55 @@ const MetaValue = styled.p`
   color: ${C.onSurface};
 `;
 
+const EnrichmentGrid = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  @media (max-width: 800px) { grid-template-columns: 1fr; }
+`;
+
+const EnrichmentCard = styled.div<{ accent: string }>`
+  background: ${C.surface};
+  border: 2px solid ${C.surfaceHigh};
+  border-left: 6px solid ${({ accent }) => accent};
+  padding: 1rem;
+`;
+
+const MediaThumb = styled.img`
+  width: 100%;
+  max-height: 180px;
+  object-fit: cover;
+  border: 1px solid ${C.outline};
+  margin-bottom: 0.75rem;
+`;
+
+const EnrichmentTitle = styled.p`
+  margin: 0 0 0.4rem;
+  font-family: 'Epilogue', sans-serif;
+  font-weight: 700;
+  color: ${C.onSurface};
+`;
+
+const EnrichmentSub = styled.p`
+  margin: 0 0 0.75rem;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.85rem;
+  color: ${C.onSurfaceVar};
+`;
+
+const EnrichmentLink = styled.a`
+  display: inline-block;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: ${C.secondary};
+  text-decoration: none;
+  &:hover { color: ${C.tertiary}; }
+`;
+
 const ButtonRow = styled.div`
   display: flex;
   gap: 1rem;
@@ -192,7 +242,7 @@ const SecondaryBtn = styled.button`
 const Result: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const result   = location.state?.result;
+  const result = (location.state?.result as MotivateResponse | undefined);
   const coach    = location.state?.coach ?? "coach1";
   const coachName = location.state?.coachName ?? "Coach";
   const accent   = coachAccent[coach] ?? C.primary;
@@ -238,6 +288,31 @@ const Result: React.FC = () => {
             </MetaCard>
           </MetaGrid>
         </ResultCard>
+
+        <EnrichmentGrid>
+          <EnrichmentCard accent={accent}>
+            <SectionLabel>VIDEOBOOST</SectionLabel>
+            {result.media?.thumbnail ? <MediaThumb src={result.media.thumbnail} alt={result.media.title || "YouTube thumbnail"} /> : null}
+            <EnrichmentTitle>{result.media?.title || "Ingen video foresla"}</EnrichmentTitle>
+            {result.media?.url ? (
+              <EnrichmentLink href={result.media.url} target="_blank" rel="noreferrer">
+                SE VIDEO
+              </EnrichmentLink>
+            ) : null}
+          </EnrichmentCard>
+
+          <EnrichmentCard accent={accent}>
+            <SectionLabel>MUSIKKBOOST</SectionLabel>
+            {result.spotify?.image ? <MediaThumb src={result.spotify.image} alt={result.spotify.title || "Spotify cover"} /> : null}
+            <EnrichmentTitle>{result.spotify?.title || "Ingen latforslag"}</EnrichmentTitle>
+            <EnrichmentSub>{result.spotify?.artist || ""}</EnrichmentSub>
+            {result.spotify?.url ? (
+              <EnrichmentLink href={result.spotify.url} target="_blank" rel="noreferrer">
+                APNE I SPOTIFY
+              </EnrichmentLink>
+            ) : null}
+          </EnrichmentCard>
+        </EnrichmentGrid>
 
         <ButtonRow>
           <PrimaryBtn onClick={() => navigate(`/prompt/${coach}`)}>← NY OPPGAVE</PrimaryBtn>

@@ -4,6 +4,19 @@ export interface MotivateResponse {
   motivation: string;
   coach: string;
   safety_note: string;
+  media?: {
+    type: string;
+    title: string;
+    url: string;
+    thumbnail?: string;
+  };
+  spotify?: {
+    type: string;
+    title: string;
+    artist: string;
+    url: string;
+    image?: string;
+  };
 }
 
 export async function motivate(coach: string, task: string): Promise<MotivateResponse> {
