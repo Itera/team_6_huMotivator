@@ -99,10 +99,17 @@ def models():
 
 
 @app.get("/motivate")
-def motivate(coach: CoachType = Query(..., description="Coach style: coach1, coach2, or coach3")):
+def motivate(
+    coach: CoachType = Query(..., description="Coach style: coach1, coach2, or coach3"),
+    task: str = Query(default="", description="Optional task to motivate about"),
+):
     """Get motivational content from a specific coach personality."""
     system_prompt = COACH_SYSTEM_PROMPTS[coach]
-    user_prompt = "Gi meg motivasjon nå. Svar kort og på norsk."
+    user_prompt = (
+        f"Gi meg motivasjon for denne oppgaven: {task.strip()}. Svar kort og på norsk."
+        if task.strip()
+        else "Gi meg motivasjon nå. Svar kort og på norsk."
+    )
 
     messages = [
         {"role": "system", "content": system_prompt},

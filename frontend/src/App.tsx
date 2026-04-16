@@ -3,6 +3,7 @@ import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
 import GlobalStyle from "../components/GlobalStyle";
 import { ThemeProvider } from "../components/ThemeProvider";
 import Home from "../pages/Home";
+import Prompt from "../pages/Prompt";
 import Result from "../pages/Result";
 
 const App: React.FC = () => {
@@ -12,6 +13,7 @@ const App: React.FC = () => {
       <Router>
         <Routes>
           <Route path="/" element={<Home />} />
+          <Route path="/prompt/:coach" element={<Prompt />} />
           <Route path="/result" element={<Result />} />
         </Routes>
       </Router>

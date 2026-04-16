@@ -1,44 +1,73 @@
-import React, { useState } from "react";
+import React from "react";
 import { useNavigate } from "react-router-dom";
-import styled, { keyframes } from "styled-components";
-import { useTheme } from "../components/ThemeProvider";
-import { getModels, motivate } from "../services/api";
+import styled from "styled-components";
 
-// ─── Design Tokens ────────────────────────────────────────────────────────────
 const C = {
-  primary:         "#ff7cf5",
+  bg:              "#131313",
+  bgDeep:          "#0e0e0e",
+  surface:         "#1f1f1f",
+  surfaceHigh:     "#2a2a2a",
+  surfaceLow:      "#1b1b1b",
+  primary:         "#ff00ff",
+  onPrimary:       "#5b005b",
   secondary:       "#c3f400",
-  tertiary:        "#c1fffe",
-  bg:              "#0e0e0e",
-  surface:         "#1a1a1a",
-  surfaceLow:      "#131313",
-  surfaceHigh:     "#20201f",
-  surfaceHighest:  "#262626",
-  onSurface:       "#ffffff",
-  onSurfaceVar:    "#adaaaa",
-  outlineVar:      "#484847",
-  onPrimary:       "#580058",
-  onSecondary:     "#455900",
+  onSecondary:     "#283500",
+  tertiary:        "#00daf3",
+  onTertiary:      "#00363d",
+  error:           "#ffb4ab",
+  onError:         "#690005",
+  errorContainer:  "#93000a",
+  onSurface:       "#e2e2e2",
+  onSurfaceVar:    "#dcbed4",
 };
 
-// ─── Animations ──────────────────────────────────────────────────────────────
-const pulse = keyframes`
-  0%, 100% { opacity: 1; }
-  50%       { opacity: 0.6; }
+const ScanlineOverlay = styled.div`
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  opacity: 0.15;
+  background:
+    linear-gradient(rgba(18,16,16,0) 50%, rgba(0,0,0,0.12) 50%),
+    linear-gradient(90deg, rgba(255,0,0,0.02), rgba(0,255,0,0.01), rgba(0,0,255,0.02));
+  background-size: 100% 4px, 3px 100%;
 `;
 
-// ─── Layout ───────────────────────────────────────────────────────────────────
+const DecoLine1 = styled.div`
+  position: fixed;
+  top: 25%;
+  right: -3rem;
+  width: 16rem;
+  height: 0.5rem;
+  background: ${C.primary};
+  transform: rotate(-45deg);
+  opacity: 0.15;
+  pointer-events: none;
+`;
+const DecoLine2 = styled.div`
+  position: fixed;
+  bottom: 25%;
+  left: -3rem;
+  width: 24rem;
+  height: 1rem;
+  background: ${C.tertiary};
+  transform: rotate(12deg);
+  opacity: 0.08;
+  pointer-events: none;
+`;
+
 const Header = styled.header`
   position: fixed;
   top: 0; left: 0; width: 100%;
   z-index: 50;
+  height: 5rem;
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 1rem 1.5rem;
-  background: ${C.surfaceLow};
-  border-bottom: 4px solid ${C.secondary};
-  box-shadow: 0 4px 20px rgba(195, 244, 0, 0.3);
+  justify-content: space-between;
+  padding: 0 1.5rem;
+  background: rgba(19,19,19,0.5);
+  backdrop-filter: blur(20px);
+  box-shadow: 0 0 20px rgba(255,0,255,0.3);
 `;
 
 const Logo = styled.h1`
@@ -47,570 +76,441 @@ const Logo = styled.h1`
   font-style: italic;
   font-size: 1.75rem;
   text-transform: uppercase;
-  letter-spacing: -0.05em;
+  letter-spacing: -0.04em;
   color: ${C.primary};
   margin: 0;
-  text-shadow: 0 0 10px rgba(255, 124, 245, 0.8);
+  text-shadow: 0 0 12px rgba(255,0,255,0.6);
 `;
 
-const Main = styled.main`
-  padding: 6rem 1.5rem 8rem;
-  max-width: 1024px;
-  margin: 0 auto;
+const HeaderNav = styled.nav`
+  display: none;
+  gap: 1.5rem;
+  @media (min-width: 768px) { display: flex; }
 `;
 
-// ─── Hero ─────────────────────────────────────────────────────────────────────
-const HeroSection = styled.section`
-  margin-bottom: 3rem;
-  border-left: 8px solid ${C.secondary};
-  padding: 1rem 0 1rem 1.5rem;
-`;
-
-const HeroTitle = styled.h2`
+const NavLink = styled.a<{ active?: boolean }>`
   font-family: 'Epilogue', sans-serif;
   font-weight: 900;
-  font-style: italic;
-  font-size: clamp(3rem, 10vw, 6rem);
+  font-size: 0.85rem;
   text-transform: uppercase;
-  line-height: 1;
-  letter-spacing: -0.05em;
-  margin: 0 0 1.5rem 0;
-  color: ${C.onSurface};
+  letter-spacing: -0.02em;
+  color: ${({ active }) => active ? C.secondary : C.onSurface};
+  text-decoration: none;
+  ${({ active }) => active ? `border-bottom: 4px solid ${C.secondary};` : ""}
+  &:hover { color: ${C.primary}; }
 `;
 
-const HeroAccent = styled.span`
-  color: ${C.secondary};
-  text-shadow: 4px 4px 0px #580058;
+const Sidebar = styled.aside`
+  display: none;
+  @media (min-width: 1024px) {
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    left: 0; top: 0;
+    height: 100vh;
+    width: 16rem;
+    padding-top: 6rem;
+    background: ${C.bgDeep};
+    border-right: 4px solid ${C.surface};
+    z-index: 40;
+  }
 `;
 
-const StatusRow = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-end;
-  gap: 1rem;
+const SidebarSection = styled.div`
+  padding: 0 1.5rem 2rem;
 `;
-
-const StatusCard = styled.div`
-  background: ${C.surfaceHigh};
-  padding: 1rem;
-  border: 2px solid rgba(255, 124, 245, 0.2);
-  flex: 1;
-  min-width: 200px;
-`;
-
-const StatusLabel = styled.p`
+const SidebarLabel = styled.p`
   font-family: 'Space Grotesk', sans-serif;
-  font-size: 0.7rem;
-  text-transform: uppercase;
-  letter-spacing: 0.2em;
-  color: ${C.primary};
-  margin: 0 0 0.25rem 0;
-`;
-
-const StatusValue = styled.p`
-  font-family: 'Epilogue', sans-serif;
+  font-size: 0.65rem;
   font-weight: 700;
-  font-size: 1.1rem;
-  margin: 0;
-`;
-
-const AlertBadge = styled.div`
-  background: ${C.secondary};
-  color: ${C.onSecondary};
-  padding: 0.75rem 1rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-family: 'Space Grotesk', sans-serif;
-  font-size: 0.7rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-`;
-
-// ─── Bento Grid ───────────────────────────────────────────────────────────────
-const Grid = styled.div`
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 1.5rem;
-
-  @media (min-width: 768px) {
-    grid-template-columns: repeat(12, 1fr);
-  }
-`;
-
-// ─── Input Card ───────────────────────────────────────────────────────────────
-const InputCard = styled.div`
-  background: ${C.surface};
-  border: 2px solid rgba(72, 72, 71, 0.3);
-  padding: 2rem;
-  position: relative;
-  overflow: hidden;
-
-  @media (min-width: 768px) {
-    grid-column: span 8;
-  }
-
-  &::before {
-    content: 'ROCK';
-    position: absolute;
-    top: 0; right: 0;
-    padding: 0.5rem;
-    opacity: 0.07;
-    font-family: 'Epilogue', sans-serif;
-    font-weight: 900;
-    font-size: 4rem;
-    transform: rotate(-12deg);
-    pointer-events: none;
-    color: ${C.onSurface};
-  }
-`;
-
-const InputLabel = styled.label`
-  display: block;
-  font-family: 'Space Grotesk', sans-serif;
-  font-size: 0.8rem;
   text-transform: uppercase;
   letter-spacing: 0.2em;
   color: ${C.tertiary};
-  margin-bottom: 1.5rem;
+  margin: 0 0 0.25rem;
 `;
-
-const InputWrapper = styled.div`
-  position: relative;
-
-  &::after {
-    content: '';
-    position: absolute;
-    bottom: 0; left: 0;
-    width: 0; height: 4px;
-    background: ${C.tertiary};
-    box-shadow: 0 0 15px ${C.tertiary};
-    transition: width 0.5s;
-  }
-
-  &:focus-within::after {
-    width: 100%;
-  }
-`;
-
-const TaskInput = styled.input`
-  width: 100%;
-  background: ${C.surfaceHighest};
-  border: none;
-  border-bottom: 4px solid ${C.outlineVar};
-  color: ${C.onSurface};
-  font-family: 'Epilogue', sans-serif;
-  font-weight: 700;
-  font-size: clamp(1.5rem, 4vw, 2.5rem);
-  text-transform: uppercase;
-  padding: 1.5rem 0;
-  outline: none;
-  transition: border-color 0.3s;
-
-  &::placeholder {
-    opacity: 0.2;
-  }
-
-  &:focus {
-    border-bottom-color: ${C.tertiary};
-  }
-`;
-
-const ChipsRow = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-  margin-top: 2rem;
-`;
-
-interface ChipProps { selected: boolean; }
-const Chip = styled.button<ChipProps>`
-  background: ${({ selected }) => selected ? "#506600" : C.surfaceLow};
-  border: ${({ selected }) => selected ? `2px solid ${C.secondary}` : `1px solid ${C.outlineVar}`};
-  color: ${({ selected }) => selected ? C.secondary : C.onSurfaceVar};
-  padding: 0.5rem 1rem;
+const SidebarSub = styled.p`
   font-family: 'Space Grotesk', sans-serif;
-  font-size: 0.7rem;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  cursor: pointer;
-  transition: all 0.2s;
-
-  &:hover {
-    border-color: ${C.secondary};
-    color: ${C.secondary};
-  }
+  font-size: 0.6rem;
+  opacity: 0.6;
+  margin: 0;
 `;
 
-// ─── Motivate Button ──────────────────────────────────────────────────────────
-const MotivateCard = styled.button`
-  background: ${C.primary};
-  color: ${C.onPrimary};
-  border: none;
-  padding: 3rem 1.5rem;
+const SidebarNav = styled.nav`
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 1rem;
-  cursor: pointer;
-  box-shadow: 8px 8px 0px ${C.secondary};
-  transition: transform 0.15s, box-shadow 0.15s;
-  width: 100%;
-
-  @media (min-width: 768px) {
-    grid-column: span 4;
-  }
-
-  &:hover:not(:disabled) {
-    transform: scale(1.02);
-  }
-  &:active:not(:disabled) {
-    transform: scale(0.95);
-    box-shadow: 4px 4px 0px ${C.secondary};
-  }
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
+  gap: 2px;
 `;
 
-const MotivateIcon = styled.span`
-  font-size: 3.5rem;
-  font-variation-settings: 'FILL' 1;
-  transition: transform 0.2s;
-
-  ${MotivateCard}:hover & {
-    transform: rotate(12deg);
-  }
-`;
-
-const MotivateLabel = styled.span`
-  font-family: 'Epilogue', sans-serif;
-  font-weight: 900;
-  font-style: italic;
-  font-size: 2rem;
-  text-transform: uppercase;
-  text-align: center;
-  line-height: 1.1;
-`;
-
-const LoadingLabel = styled.span`
-  font-family: 'Space Grotesk', sans-serif;
-  font-size: 0.8rem;
-  text-transform: uppercase;
-  letter-spacing: 0.15em;
-  animation: ${pulse} 1s infinite;
-`;
-
-// ─── Stats Card ───────────────────────────────────────────────────────────────
-const StatsCard = styled.div`
-  background: ${C.surfaceHigh};
-  padding: 1.5rem;
-  border-bottom: 8px solid ${C.secondary};
-
-  @media (min-width: 768px) {
-    grid-column: span 4;
-  }
-`;
-
-const StatsHeader = styled.div`
+const SidebarItem = styled.a<{ active?: boolean }>`
   display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 1.5rem;
-`;
-
-const StatsTitle = styled.p`
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.5rem;
   font-family: 'Space Grotesk', sans-serif;
   font-size: 0.7rem;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.2em;
+  letter-spacing: 0.1em;
+  text-decoration: none;
+  background: ${({ active }) => active ? C.primary : "transparent"};
+  color: ${({ active }) => active ? C.onPrimary : C.onSurface};
+  opacity: ${({ active }) => active ? 1 : 0.65};
+  transition: none;
+  &:hover { background: ${C.surfaceHigh}; opacity: 1; border-left: 8px solid ${C.tertiary}; }
+`;
+
+const SidebarFooter = styled.div`
+  margin-top: auto;
+  padding: 1.5rem;
+`;
+
+const DisruptBtn = styled.button`
+  width: 100%;
+  padding: 1rem;
+  background: transparent;
+  border: 2px solid ${C.secondary};
+  color: ${C.secondary};
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.7rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  cursor: pointer;
+  &:active { transform: scale(0.97); }
+`;
+
+const Main = styled.main`
+  position: relative;
+  z-index: 10;
+  padding: 7rem 1.5rem 6rem;
+  min-height: 100vh;
+  @media (min-width: 1024px) { padding-left: calc(16rem + 1.5rem); }
+`;
+
+const PageHeader = styled.div`
+  margin-bottom: 3rem;
+`;
+
+const PageTitle = styled.h2`
+  font-family: 'Epilogue', sans-serif;
+  font-weight: 900;
+  font-size: clamp(3.5rem, 10vw, 6rem);
+  text-transform: uppercase;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  margin: 0 0 1rem;
+  color: ${C.onSurface};
+`;
+const TitleAccent = styled.span`
+  color: ${C.primary};
+  text-shadow: 0 0 12px rgba(255,0,255,0.5);
+`;
+
+const SubRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+`;
+const SubLine = styled.div`
+  width: 6rem;
+  height: 4px;
+  background: ${C.secondary};
+`;
+const SubText = styled.p`
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
   color: ${C.secondary};
   margin: 0;
 `;
 
-const BarChart = styled.div`
-  display: flex;
-  align-items: flex-end;
-  gap: 3px;
-  height: 6rem;
-  margin-bottom: 1rem;
+const Grid = styled.div`
+  display: grid;
+  gap: 3rem;
+  grid-template-columns: 1fr;
+  @media (min-width: 768px) { grid-template-columns: repeat(2, 1fr); }
+  @media (min-width: 1024px) { grid-template-columns: repeat(3, 1fr); }
 `;
 
-interface BarProps { height: string; }
-const Bar = styled.div<BarProps>`
-  flex: 1;
-  background: ${C.secondary};
-  height: ${({ height }) => height};
-`;
+interface CardAccent { accent: string; shadowHover: string; }
 
-const StatsDesc = styled.p`
-  font-family: 'Space Grotesk', sans-serif;
-  font-size: 0.85rem;
-  color: ${C.onSurfaceVar};
-  line-height: 1.5;
-  margin: 0;
-`;
+const CoachCard = styled.div<CardAccent>`
+  position: relative;
+  background: ${C.surface};
+  border: 2px solid transparent;
+  cursor: pointer;
+  box-shadow: 12px 12px 0px ${C.surfaceHigh};
+  transition: none;
 
-// ─── Quote Card ───────────────────────────────────────────────────────────────
-const QuoteCard = styled.div`
-  background: ${C.surfaceHighest};
-  padding: 2rem;
-  display: flex;
-  align-items: flex-end;
-  min-height: 200px;
-  border-left: 4px solid ${C.primary};
-
-  @media (min-width: 768px) {
-    grid-column: span 8;
+  &:hover {
+    border-color: ${({ accent }) => accent};
+    box-shadow: 16px 16px 0px ${({ shadowHover }) => shadowHover};
   }
+  &:active { transform: translate(4px, 4px); box-shadow: 8px 8px 0px ${({ shadowHover }) => shadowHover}; }
 `;
 
-const QuoteText = styled.p`
+const CardImageBox = styled.div`
+  aspect-ratio: 1;
+  overflow: hidden;
+  background: ${C.surfaceLow};
+  position: relative;
+`;
+
+const CardImagePlaceholder = styled.div<{ color: string }>`
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, ${({ color }) => color}22 0%, ${C.bgDeep} 70%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Epilogue', sans-serif;
+  font-weight: 900;
+  font-size: 6rem;
+  color: ${({ color }) => color};
+  opacity: 0.4;
+  text-shadow: 0 0 40px currentColor;
+`;
+
+const GradientOverlay = styled.div`
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, ${C.bg} 0%, transparent 60%);
+  opacity: 0.5;
+`;
+
+const Badge = styled.div<{ color: string; textColor: string }>`
+  position: absolute;
+  top: 1rem; left: 1rem;
+  background: ${({ color }) => color};
+  color: ${({ textColor }) => textColor};
+  padding: 0.25rem 1rem;
+  font-family: 'Epilogue', sans-serif;
+  font-weight: 900;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  transform: skewX(-10deg);
+`;
+
+const CardBody = styled.div`
+  padding: 2rem;
+`;
+
+const CoachName = styled.h3`
   font-family: 'Epilogue', sans-serif;
   font-weight: 900;
   font-style: italic;
-  font-size: 1.5rem;
+  font-size: 2.25rem;
   text-transform: uppercase;
-  letter-spacing: -0.03em;
-  margin: 0 0 0.5rem 0;
+  letter-spacing: -0.04em;
+  color: ${C.onSurface};
+  margin: 0 0 0.75rem;
 `;
 
-const QuoteAttrib = styled.p`
+const CoachDesc = styled.p`
   font-family: 'Space Grotesk', sans-serif;
-  font-size: 0.7rem;
-  text-transform: uppercase;
-  letter-spacing: 0.2em;
-  color: ${C.primary};
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: ${C.onSurface};
+  opacity: 0.8;
   margin: 0;
 `;
 
-// ─── Footer ───────────────────────────────────────────────────────────────────
-const Footer = styled.footer`
-  margin-top: 3rem;
-  padding-top: 2rem;
-  border-top: 2px solid rgba(72, 72, 71, 0.2);
+const CardFooter = styled.div`
   display: flex;
-  flex-wrap: wrap;
   justify-content: space-between;
-  align-items: center;
-  gap: 1.5rem;
-  opacity: 0.4;
-  transition: opacity 0.5s, filter 0.5s;
-  filter: grayscale(1);
-
-  &:hover {
-    opacity: 1;
-    filter: grayscale(0);
-  }
+  align-items: flex-end;
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba(255,255,255,0.08);
 `;
 
-const FooterCopy = styled.p`
+const LevelLabel = styled.span<{ color: string }>`
   font-family: 'Space Grotesk', sans-serif;
-  font-size: 0.6rem;
+  font-size: 0.65rem;
+  font-weight: 900;
   text-transform: uppercase;
   letter-spacing: 0.15em;
-  margin: 0;
+  color: ${({ color }) => color};
 `;
 
-const FooterIcons = styled.div`
-  display: flex;
-  gap: 2rem;
+const FooterIcon = styled.span<{ color: string }>`
+  font-size: 1.75rem;
+  color: ${({ color }) => color};
 `;
 
-// ─── Bottom Nav ───────────────────────────────────────────────────────────────
 const BottomNav = styled.nav`
   position: fixed;
   bottom: 0; left: 0; width: 100%;
   z-index: 50;
   display: flex;
   justify-content: space-around;
-  height: 5rem;
+  height: 4rem;
   background: ${C.bg};
-  border-top: 4px solid ${C.primary};
-  box-shadow: 0 -4px 20px rgba(255, 124, 245, 0.4);
+  border-top: 2px solid ${C.surfaceHigh};
+  box-shadow: 0 -10px 20px rgba(0,0,0,0.5);
+  @media (min-width: 1024px) { display: none; }
 `;
 
-interface NavItemProps { active?: boolean; }
-const NavItem = styled.a<NavItemProps>`
+const BottomNavItem = styled.a<{ active?: boolean }>`
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   flex: 1;
-  gap: 0.25rem;
+  gap: 0.2rem;
   text-decoration: none;
-  cursor: pointer;
   background: ${({ active }) => active ? C.secondary : "transparent"};
-  color: ${({ active }) => active ? C.onSecondary : C.primary};
-  opacity: ${({ active }) => active ? 1 : 0.6};
-  transition: all 0.2s;
-  ${({ active }) => active ? `outline: 2px solid ${C.tertiary};` : ""}
-
-  &:hover {
-    background: ${C.surface};
-    opacity: 1;
-  }
+  color: ${({ active }) => active ? C.onSecondary : C.onSurface};
+  &:active { transform: scale(0.95); }
 `;
 
-const NavLabel = styled.span`
+const BottomNavLabel = styled.span`
   font-family: 'Space Grotesk', sans-serif;
   font-size: 0.55rem;
-  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.15em;
+  letter-spacing: 0.1em;
 `;
 
-// ─── Coaches ──────────────────────────────────────────────────────────────────
 const coaches = [
-  { key: "military",    label: "#MILITÆRLEDER" },
-  { key: "psychologist",label: "#PSYKOLOG"     },
-  { key: "artist",      label: "#KUNSTNER"     },
+  {
+    key: "coach1",
+    name: "Drill Sergeant",
+    desc: "Weakness is a choice this animated powerhouse won't let you make. Hard work, no shortcuts, and high-voltage discipline.",
+    badge: "MILITARY",
+    badgeColor: C.errorContainer,
+    badgeText: "#fff",
+    accent: C.error,
+    shadowHover: "#93000a",
+    level: "LEVEL: BRUTAL",
+    levelColor: C.error,
+    icon: "military_tech",
+    symbol: "⚔",
+  },
+  {
+    key: "coach2",
+    name: "The Zen Psych",
+    desc: '"I understand this is hard for you." A softer approach to total life disruption. He listens to your excuses, then calmly dismantles them.',
+    badge: "EMPATHY",
+    badgeColor: C.primary,
+    badgeText: C.onPrimary,
+    accent: C.primary,
+    shadowHover: "#510051",
+    level: "LEVEL: TRANQUIL",
+    levelColor: C.primary,
+    icon: "psychology",
+    symbol: "☯",
+  },
+  {
+    key: "coach3",
+    name: "Crystal Mystic",
+    desc: "Finds your optimal training frequency in the vibration of raw quartz. Sacred geometry and ethereal gains. Align your chakras and your lats.",
+    badge: "SPIRIT",
+    badgeColor: C.tertiary,
+    badgeText: C.onTertiary,
+    accent: C.tertiary,
+    shadowHover: "#004f58",
+    level: "LEVEL: ETHEREAL",
+    levelColor: C.tertiary,
+    icon: "change_history",
+    symbol: "✦",
+  },
 ];
 
-const barHeights = ["80%", "40%", "95%", "60%", "30%", "85%", "50%"];
-
-// ─── Component ────────────────────────────────────────────────────────────────
 const Home: React.FC = () => {
-  const [task, setTask]               = useState("");
-  const [loading, setLoading]         = useState(false);
-  const [selectedCoach, setSelectedCoach] = useState("military");
-  const [selectedModel]               = useState("llama3.2");
   const navigate = useNavigate();
-  const { setTheme } = useTheme();
-
-  const handleCoachSelect = (key: string) => {
-    setSelectedCoach(key);
-    setTheme(key);
-  };
-
-  const handleMotivate = async () => {
-    if (!task || loading) return;
-    setLoading(true);
-    try {
-      const response = await motivate(task, selectedModel);
-      navigate("/result", { state: { result: response, coach: selectedCoach } });
-    } catch {
-      alert("Klarte ikke å hente motivasjon. Prøv igjen!");
-    } finally {
-      setLoading(false);
-    }
-  };
 
   return (
     <>
+      <ScanlineOverlay />
+      <DecoLine1 />
+      <DecoLine2 />
+
       <Header>
-        <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-          <span className="material-symbols-outlined" style={{ color: C.primary, cursor: "pointer" }}>menu</span>
+        <div style={{ display: "flex", alignItems: "center", gap: "2rem" }}>
           <Logo>HUMOTIVATOREN</Logo>
+          <HeaderNav>
+            <NavLink href="#">AMPLIFY</NavLink>
+            <NavLink href="#" active>STATION</NavLink>
+            <NavLink href="#">FREQUENCIES</NavLink>
+          </HeaderNav>
         </div>
-        <span className="material-symbols-outlined" style={{ color: C.primary, cursor: "pointer" }}>electric_bolt</span>
+        <span className="material-symbols-outlined" style={{ color: C.onSurface, cursor: "pointer" }}>settings</span>
       </Header>
 
+      <Sidebar>
+        <SidebarSection>
+          <SidebarLabel>VOLTAGE</SidebarLabel>
+          <SidebarSub>ANALOG SIGNAL</SidebarSub>
+        </SidebarSection>
+        <SidebarNav>
+          <SidebarItem href="#" active>
+            <span className="material-symbols-outlined">equalizer</span> AMPLIFY
+          </SidebarItem>
+          <SidebarItem href="#">
+            <span className="material-symbols-outlined">blur_on</span> STATIC
+          </SidebarItem>
+          <SidebarItem href="#">
+            <span className="material-symbols-outlined">analytics</span> FREQUENCIES
+          </SidebarItem>
+          <SidebarItem href="#">
+            <span className="material-symbols-outlined">inventory_2</span> ARCHIVE
+          </SidebarItem>
+        </SidebarNav>
+        <SidebarFooter>
+          <DisruptBtn>DISRUPT</DisruptBtn>
+        </SidebarFooter>
+      </Sidebar>
+
       <Main>
-        <HeroSection>
-          <HeroTitle>
-            SHUT UP &amp; <br />
-            <HeroAccent>PERFORM.</HeroAccent>
-          </HeroTitle>
-          <StatusRow>
-            <StatusCard>
-              <StatusLabel>SYSTEM STATUS</StatusLabel>
-              <StatusValue>66% AV TÅLMODIGHETEN DIN ER BRUKT OPP.</StatusValue>
-            </StatusCard>
-            <AlertBadge>
-              <span className="material-symbols-outlined" style={{ fontSize: "1rem" }}>warning</span>
-              KRITISKE NIVÅER AV APATI OPPDAGET
-            </AlertBadge>
-          </StatusRow>
-        </HeroSection>
+        <PageHeader>
+          <PageTitle>
+            VELG <TitleAccent>COACH</TitleAccent>
+          </PageTitle>
+          <SubRow>
+            <SubLine />
+            <SubText>TRANSMISSION ENCRYPTED // SELECT YOUR DISRUPTOR</SubText>
+          </SubRow>
+        </PageHeader>
 
         <Grid>
-          <InputCard>
-            <InputLabel htmlFor="task">HVA ER DITT OPPDRAG, REBELL?</InputLabel>
-            <InputWrapper>
-              <TaskInput
-                id="task"
-                type="text"
-                placeholder="F.EKS. ØDELEGG DETTE REGNEARKET..."
-                value={task}
-                onChange={(e) => setTask(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleMotivate()}
-              />
-            </InputWrapper>
-            <ChipsRow>
-              {coaches.map((c) => (
-                <Chip
-                  key={c.key}
-                  selected={selectedCoach === c.key}
-                  onClick={() => handleCoachSelect(c.key)}
-                  type="button"
-                >
-                  {c.label}
-                </Chip>
-              ))}
-            </ChipsRow>
-          </InputCard>
-
-          <MotivateCard onClick={handleMotivate} disabled={loading || !task} type="button">
-            <MotivateIcon className="material-symbols-outlined">bolt</MotivateIcon>
-            {loading
-              ? <LoadingLabel>LASTER...</LoadingLabel>
-              : <MotivateLabel>MOTIVER<br />MEG</MotivateLabel>
-            }
-          </MotivateCard>
-
-          <StatsCard>
-            <StatsHeader>
-              <StatsTitle>VOLUMETER</StatsTitle>
-              <span className="material-symbols-outlined" style={{ color: C.secondary }}>graphic_eq</span>
-            </StatsHeader>
-            <BarChart>
-              {barHeights.map((h, i) => <Bar key={i} height={h} />)}
-            </BarChart>
-            <StatsDesc>
-              Innsatsen din er på <strong style={{ color: "#fff" }}>LEGENDARISK</strong> nivå.
-              La ikke kjedelige oppgaver dempe lyden.
-            </StatsDesc>
-          </StatsCard>
-
-          <QuoteCard>
-            <div>
-              <QuoteText>"SØVN ER FOR DE SVAKE."</QuoteText>
-              <QuoteAttrib>— UKJENT ROADIE, 1984</QuoteAttrib>
-            </div>
-          </QuoteCard>
+          {coaches.map((coach) => (
+            <CoachCard
+              key={coach.key}
+              accent={coach.accent}
+              shadowHover={coach.shadowHover}
+              onClick={() => navigate(`/prompt/${coach.key}`)}
+            >
+              <CardImageBox>
+                <CardImagePlaceholder color={coach.accent}>
+                  {coach.symbol}
+                </CardImagePlaceholder>
+                <GradientOverlay />
+                <Badge color={coach.badgeColor} textColor={coach.badgeText}>
+                  {coach.badge}
+                </Badge>
+              </CardImageBox>
+              <CardBody>
+                <CoachName>{coach.name}</CoachName>
+                <CoachDesc>{coach.desc}</CoachDesc>
+                <CardFooter>
+                  <LevelLabel color={coach.levelColor}>{coach.level}</LevelLabel>
+                  <FooterIcon className="material-symbols-outlined" color={coach.levelColor}>
+                    {coach.icon}
+                  </FooterIcon>
+                </CardFooter>
+              </CardBody>
+            </CoachCard>
+          ))}
         </Grid>
-
-        <Footer>
-          <FooterCopy>© 198X HUMOTIVATOREN INC. | INGEN REFUSJON FOR TAPT AMBISJON.</FooterCopy>
-          <FooterIcons>
-            <span className="material-symbols-outlined">album</span>
-            <span className="material-symbols-outlined">podium</span>
-            <span className="material-symbols-outlined">stadium</span>
-          </FooterIcons>
-        </Footer>
       </Main>
 
       <BottomNav>
-        <NavItem href="#">
-          <span className="material-symbols-outlined">confirmation_number</span>
-          <NavLabel>TOUR</NavLabel>
-        </NavItem>
-        <NavItem active href="#">
-          <span className="material-symbols-outlined">speaker_group</span>
-          <NavLabel>STAGES</NavLabel>
-        </NavItem>
-        <NavItem href="#">
-          <span className="material-symbols-outlined">graphic_eq</span>
-          <NavLabel>VIBES</NavLabel>
-        </NavItem>
-        <NavItem href="#">
-          <span className="material-symbols-outlined">badge</span>
-          <NavLabel>PASS</NavLabel>
-        </NavItem>
+        <BottomNavItem href="#"><span className="material-symbols-outlined">sensors</span><BottomNavLabel>LIVE</BottomNavLabel></BottomNavItem>
+        <BottomNavItem href="#" active><span className="material-symbols-outlined">ssid_chart</span><BottomNavLabel>DATA</BottomNavLabel></BottomNavItem>
+        <BottomNavItem href="#"><span className="material-symbols-outlined">tune</span><BottomNavLabel>MIX</BottomNavLabel></BottomNavItem>
+        <BottomNavItem href="#"><span className="material-symbols-outlined">settings_input_component</span><BottomNavLabel>GEAR</BottomNavLabel></BottomNavItem>
       </BottomNav>
     </>
   );
