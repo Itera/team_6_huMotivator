@@ -54,7 +54,7 @@ def test_motivate_ok_plain_text(monkeypatch):
     monkeypatch.setattr(main.youtube_service, "search_video", fake_search)
     monkeypatch.setattr(main.spotify_service, "search_track", _fake_spotify)
 
-    response = client.get("/motivate?coach=coach1&task=Forberede+presentasjon")
+    response = client.post("/motivate", json={"coach": "coach1", "task": "Forberede presentasjon"})
 
     assert response.status_code == 200
     payload = response.json()
@@ -87,7 +87,7 @@ def test_motivate_ok_with_media(monkeypatch):
     monkeypatch.setattr(main.youtube_service, "search_video", fake_search)
     monkeypatch.setattr(main.spotify_service, "search_track", _fake_spotify)
 
-    response = client.get("/motivate?coach=coach1&task=Trene+hardt")
+    response = client.post("/motivate", json={"coach": "coach1", "task": "Trene hardt"})
 
     assert response.status_code == 200
     payload = response.json()
@@ -119,7 +119,7 @@ def test_motivate_ok_media_none(monkeypatch):
     monkeypatch.setattr(main.youtube_service, "search_video", fake_search)
     monkeypatch.setattr(main.spotify_service, "search_track", _fake_spotify)
 
-    response = client.get("/motivate?coach=coach1&task=Les+bok")
+    response = client.post("/motivate", json={"coach": "coach1", "task": "Les bok"})
 
     assert response.status_code == 200
     payload = response.json()
@@ -144,7 +144,7 @@ def test_motivate_without_task(monkeypatch):
     monkeypatch.setattr(main.youtube_service, "search_video", fake_search)
     monkeypatch.setattr(main.spotify_service, "search_track", _fake_spotify)
 
-    response = client.get("/motivate?coach=coach2")
+    response = client.post("/motivate", json={"coach": "coach2", "task": ""})
 
     assert response.status_code == 200
     assert "motivation" in response.json()
@@ -167,7 +167,7 @@ def test_motivate_safety_filter(monkeypatch):
     monkeypatch.setattr(main.youtube_service, "search_video", fake_search)
     monkeypatch.setattr(main.spotify_service, "search_track", _fake_spotify)
 
-    response = client.get("/motivate?coach=coach1&task=Skrive+rapport")
+    response = client.post("/motivate", json={"coach": "coach1", "task": "Skrive rapport"})
 
     assert response.status_code == 200
     payload = response.json()
@@ -176,12 +176,12 @@ def test_motivate_safety_filter(monkeypatch):
 
 
 def test_motivate_invalid_coach():
-    response = client.get("/motivate?coach=invalid_coach")
+    response = client.post("/motivate", json={"coach": "invalid_coach", "task": "test"})
     assert response.status_code == 422
 
 
 def test_motivate_missing_coach():
-    response = client.get("/motivate")
+    response = client.post("/motivate", json={"task": "test"})
     assert response.status_code == 422
 
 
@@ -191,7 +191,7 @@ def test_motivate_llm_error(monkeypatch):
 
     monkeypatch.setattr(main.llm_service, "chat", fake_chat)
 
-    response = client.get("/motivate?coach=coach1&task=Spille+fotball")
+    response = client.post("/motivate", json={"coach": "coach1", "task": "Spille fotball"})
 
     assert response.status_code == 502
     assert "LLM error" in response.json()["detail"]
