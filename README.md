@@ -109,3 +109,13 @@ GitHub Actions workflow (`.github/workflows/ci.yml`) automatically:
 - Runs ESLint for code quality
 
 Check workflow status on the [Actions](../../actions) tab.
+
+## PR Checklist
+
+Before opening or updating a PR, verify:
+
+1. `frontend` passes lint and build.
+2. `backend` tests pass using the documented Docker command.
+3. Frontend flow works end-to-end: coach selection -> prompt -> result with motivation plus video/music enrichment.
+4. New environment variables (if any) are documented in example env files.
+5. README is updated if setup, behavior, or endpoints changed.
