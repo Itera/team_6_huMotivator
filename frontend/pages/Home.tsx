@@ -480,7 +480,7 @@ const Home: React.FC = () => {
             <NavLink href="#">FREQUENCIES</NavLink>
           </HeaderNav>
         </div>
-        <span className="material-symbols-outlined" style={{ color: C.onSurface, cursor: "pointer" }}>settings</span>
+        <span className="material-symbols-outlined" style={{ color: C.onSurface, cursor: "pointer" }} onClick={() => navigate("/settings")}>settings</span>
         <SynthPlayer />
       </Header>
 
@@ -564,7 +564,7 @@ const Home: React.FC = () => {
         <BottomNavItem href="#"><span className="material-symbols-outlined">sensors</span><BottomNavLabel>LIVE</BottomNavLabel></BottomNavItem>
         <BottomNavItem href="#" active><span className="material-symbols-outlined">ssid_chart</span><BottomNavLabel>DATA</BottomNavLabel></BottomNavItem>
         <BottomNavItem href="#"><span className="material-symbols-outlined">tune</span><BottomNavLabel>MIX</BottomNavLabel></BottomNavItem>
-        <BottomNavItem href="#"><span className="material-symbols-outlined">settings_input_component</span><BottomNavLabel>GEAR</BottomNavLabel></BottomNavItem>
+        <BottomNavItem as="button" onClick={() => navigate("/settings")} style={{ background: "transparent", border: "none", cursor: "pointer" }}><span className="material-symbols-outlined">settings_input_component</span><BottomNavLabel>POETRY</BottomNavLabel></BottomNavItem>
       </BottomNav>
     </>
   );
