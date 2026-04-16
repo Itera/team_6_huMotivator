@@ -72,6 +72,21 @@
         "mimeType": "application/json",
         "text": "{\n  \"task\": \"Jeg skal lese nyhetene og trenger inspirasjon\",\n  \"model\": \"llama3.2\"\n}"
       }
+    },
+    {
+      "_id": "req_poem",
+      "_type": "request",
+      "parentId": "fld_llm",
+      "name": "Poem",
+      "method": "POST",
+      "url": "{{ _.base_url }}/poem",
+      "headers": [
+        { "name": "Content-Type", "value": "application/json" }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"topic\": \"kaffe på kontoret\",\n  \"model\": \"llama3.2\"\n}"
+      }
     }
   ]
 }

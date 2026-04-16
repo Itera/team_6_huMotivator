@@ -20,6 +20,11 @@ class MotivateRequest(BaseModel):
     model: str = "llama3.2"
 
 
+class PoemRequest(BaseModel):
+    topic: str
+    model: str = "llama3.2"
+
+
 @app.get("/")
 def root():
     return {"message": "Velkommen til HuMotivatoren! 🎉"}
@@ -53,5 +58,20 @@ async def motivate(req: MotivateRequest):
     try:
         response = await llm_service.generate(prompt, model=req.model)
         return {"motivation": response}
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=f"LLM error: {e}")
+
+
+@app.post("/poem")
+async def poem(req: PoemRequest):
+    """Generate a short poem about a given topic."""
+    prompt = (
+        "Skriv et kort og morsomt dikt på norsk (maks 8 linjer) "
+        f"om følgende tema: {req.topic}\n\n"
+        "Diktet skal være lett, humoristisk og motiverende."
+    )
+    try:
+        response = await llm_service.generate(prompt, model=req.model)
+        return {"poem": response}
     except Exception as e:
         raise HTTPException(status_code=502, detail=f"LLM error: {e}")
