@@ -19,12 +19,12 @@ export const neonFlicker = keyframes`
 
 // RGB glitch — splits color channels like a misaligned VHS tape
 export const glitchText = keyframes`
-  0%   { clip-path: inset(0 0 100% 0); transform: translate(0); }
-  5%   { clip-path: inset(20% 0 60% 0); transform: translate(-4px, 2px); color: #ff00ff; }
-  10%  { clip-path: inset(50% 0 30% 0); transform: translate(4px, -2px); color: #00daf3; }
-  15%  { clip-path: inset(80% 0 5%  0); transform: translate(-2px, 0);   color: #c3f400; }
-  20%  { clip-path: inset(0 0 0 0);    transform: translate(0);           color: inherit; }
-  100% { clip-path: inset(0 0 0 0);    transform: translate(0); }
+  0%   { clip-path: inset(0 0 100% 0); transform: translate(0); opacity: 0; }
+  5%   { clip-path: inset(20% 0 60% 0); transform: translate(-4px, 2px); color: #ff00ff; opacity: 1; }
+  10%  { clip-path: inset(50% 0 30% 0); transform: translate(4px, -2px); color: #00daf3; opacity: 1; }
+  15%  { clip-path: inset(80% 0 5%  0); transform: translate(-2px, 0);   color: #c3f400; opacity: 1; }
+  20%  { clip-path: inset(0 0 100% 0);  transform: translate(0); opacity: 0; }
+  100% { clip-path: inset(0 0 100% 0);  transform: translate(0); opacity: 0; }
 `;
 
 // CRT scanline sweep — bright bar moving down
