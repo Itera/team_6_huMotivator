@@ -1,10 +1,10 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { ThemeProvider } from '../components/ThemeProvider';
-import GlobalStyle from '../components/GlobalStyle';
-import Home from '../pages/Home';
-import Result from '../pages/Result';
-import Settings from '../pages/Settings';
+import React from "react";
+import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
+import GlobalStyle from "../components/GlobalStyle";
+import { ThemeProvider } from "../components/ThemeProvider";
+import Home from "../pages/Home";
+import Result from "../pages/Result";
+import Settings from "../pages/Settings";
 
 const App: React.FC = () => {
   return (

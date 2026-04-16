@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
-import styled from 'styled-components';
-import { useNavigate } from 'react-router-dom';
-import { motivate } from '../services/api';
-import { useTheme } from '../components/ThemeProvider';
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import styled from "styled-components";
+import { useTheme } from "../components/ThemeProvider";
+import { motivate } from "../services/api";
 
 const Container = styled.div`
   max-width: 500px;
@@ -10,7 +10,7 @@ const Container = styled.div`
   padding: 2rem;
   background: #f8f8ff;
   border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
   text-align: center;
 `;
 
@@ -41,9 +41,8 @@ const Loader = styled.div`
   margin: 1rem 0;
 `;
 
-
 const Home: React.FC = () => {
-  const [task, setTask] = useState('');
+  const [task, setTask] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { theme } = useTheme();
@@ -53,9 +52,9 @@ const Home: React.FC = () => {
     try {
       // Replace {} with user settings if needed
       const response = await motivate(task, { theme });
-      navigate('/result', { state: { result: response.data } });
+      navigate("/result", { state: { result: response.data } });
     } catch (error) {
-      alert('Klarte ikke å hente motivasjon. Prøv igjen!');
+      alert("Klarte ikke å hente motivasjon. Prøv igjen!");
     } finally {
       setLoading(false);
     }
@@ -69,7 +68,7 @@ const Home: React.FC = () => {
         type="text"
         placeholder="Hva skal du gjøre?"
         value={task}
-        onChange={e => setTask(e.target.value)}
+        onChange={(e) => setTask(e.target.value)}
       />
       <Button onClick={handleMotivate} disabled={loading || !task}>
         Motiver meg

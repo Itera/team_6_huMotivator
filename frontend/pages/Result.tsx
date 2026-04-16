@@ -1,6 +1,6 @@
-import React from 'react';
-import styled from 'styled-components';
-import { useLocation, useNavigate } from 'react-router-dom';
+import React from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import styled from "styled-components";
 
 const Container = styled.div`
   max-width: 600px;
@@ -8,7 +8,7 @@ const Container = styled.div`
   padding: 2rem;
   background: #fff;
   border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
   text-align: center;
 `;
 
@@ -34,7 +34,6 @@ const Button = styled.button`
   }
 `;
 
-
 const Result: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -46,7 +45,7 @@ const Result: React.FC = () => {
     return (
       <Container>
         <h2>Ingen motivasjon funnet</h2>
-        <Button onClick={() => navigate('/')}>Tilbake</Button>
+        <Button onClick={() => navigate("/")}>Tilbake</Button>
       </Container>
     );
   }
@@ -56,13 +55,27 @@ const Result: React.FC = () => {
       <h2>Resultat</h2>
       <Card>
         <strong>Motivasjon:</strong>
-        <p>{result.text || 'Ingen tekst mottatt.'}</p>
+        <p>{result.text || "Ingen tekst mottatt."}</p>
         {/* Render facts, images, quotes, etc. if present */}
-        {result.facts && <div><strong>Fakta:</strong> <p>{result.facts}</p></div>}
-        {result.image && <img src={result.image} alt="Motivasjonsbilde" style={{maxWidth:'100%',margin:'1rem 0'}} />}
-        {result.quote && <div><strong>Sitat:</strong> <p>{result.quote}</p></div>}
+        {result.facts && (
+          <div>
+            <strong>Fakta:</strong> <p>{result.facts}</p>
+          </div>
+        )}
+        {result.image && (
+          <img
+            src={result.image}
+            alt="Motivasjonsbilde"
+            style={{ maxWidth: "100%", margin: "1rem 0" }}
+          />
+        )}
+        {result.quote && (
+          <div>
+            <strong>Sitat:</strong> <p>{result.quote}</p>
+          </div>
+        )}
       </Card>
-      <Button onClick={() => navigate('/')}>Få ny inspirasjon</Button>
+      <Button onClick={() => navigate("/")}>Få ny inspirasjon</Button>
     </Container>
   );
 };

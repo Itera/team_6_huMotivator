@@ -18,7 +18,6 @@ HuMotivatoren er et verktøy som gir brukeren inspirasjon og motivasjon med inte
 - Legg til CORS-støtte for frontend-kommunikasjon
 - Sett opp miljøvariabler (`.env`) for API-nøkler
 
-
 ### 1.2 Frontend-oppsett (React/TypeScript)
 
 - Kjør `npm install` i `frontend`-mappen for å installere alle nødvendige pakker (React, ReactDOM, React Router, Styled Components, axios, mm.).
@@ -78,30 +77,34 @@ HuMotivatoren er et verktøy som gir brukeren inspirasjon og motivasjon med inte
 
 ---
 
-
 ### 3. Frontend-utvikling
 
 #### 3.1 Hovedside / Input-visning (`pages/Home`)
+
 - Inputfelt for oppgavebeskrivelse (`useState`)
 - "Motiver meg"-knapp som kaller backend via `services/api.ts` og sender bruker til Resultat-siden
 - Lasteindikator vises mens backend jobber
 
 #### 3.2 Resultatvisning (`pages/Result`)
+
 - Viser motivasjonsinnhold fra backend (tekst, fakta, bilder/GIF, sitat)
 - Alt innhold vises med Styled Components og animasjoner/overganger kan legges til
 - "Få ny inspirasjon"-knapp sender bruker tilbake til Home
 
 #### 3.3 Innstillinger / Personlighetstyper (`pages/Settings`)
+
 - Side/panel for valg av personlighetstype, innholdstype og humornivå
 - Bruk `useTheme` fra `components/ThemeProvider` for å endre tema
 - Lagre innstillinger i React state og localStorage
 
 #### 3.4 Ulike views / temaer
+
 - Minst 2-3 ulike visuelle temaer, styres via ThemeProvider og Styled Components
 - Responsivt design (fungerer på storskjerm for demo)
 - Profesjonelt, men lekent uttrykk
 
 #### 3.5 UI/UX og styling
+
 - Kun Styled Components – ingen global CSS eller Tailwind
 - Følg komponentstruktur: én fil for logikk (`.tsx`), én for styling (`.styled.tsx`)
 - God lesbarhet og demo-vennlig layout

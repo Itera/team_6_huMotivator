@@ -1,5 +1,5 @@
-import React from 'react';
-import styled from 'styled-components';
+import React from "react";
+import styled from "styled-components";
 
 const Container = styled.div`
   max-width: 500px;
@@ -7,7 +7,7 @@ const Container = styled.div`
   padding: 2rem;
   background: #f8f8ff;
   border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
   text-align: center;
 `;
 

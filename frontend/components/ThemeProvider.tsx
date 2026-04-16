@@ -1,4 +1,4 @@
-import React, { createContext, useState, useContext, ReactNode } from 'react';
+import { createContext, ReactNode, useContext, useState } from "react";
 
 interface ThemeContextType {
   theme: string;
@@ -8,7 +8,7 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export const ThemeProvider = ({ children }: { children: ReactNode }) => {
-  const [theme, setTheme] = useState('default');
+  const [theme, setTheme] = useState("default");
   return (
     <ThemeContext.Provider value={{ theme, setTheme }}>
       {children}
@@ -18,6 +18,6 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
 
 export const useTheme = () => {
   const context = useContext(ThemeContext);
-  if (!context) throw new Error('useTheme must be used within a ThemeProvider');
+  if (!context) throw new Error("useTheme must be used within a ThemeProvider");
   return context;
 };
