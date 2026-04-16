@@ -3,32 +3,51 @@ import { useLocation, useNavigate } from "react-router-dom";
 import styled from "styled-components";
 
 const C = {
-  primary:        "#ff7cf5",
-  secondary:      "#c3f400",
-  tertiary:       "#c1fffe",
-  bg:             "#0e0e0e",
-  surface:        "#1a1a1a",
-  surfaceLow:     "#131313",
-  surfaceHigh:    "#20201f",
-  surfaceHighest: "#262626",
-  onSurface:      "#ffffff",
-  onSurfaceVar:   "#adaaaa",
-  outlineVar:     "#484847",
-  onPrimary:      "#580058",
-  onSecondary:    "#455900",
+  bg:          "#131313",
+  surface:     "#1f1f1f",
+  surfaceHigh: "#2a2a2a",
+  primary:     "#ff00ff",
+  onPrimary:   "#5b005b",
+  secondary:   "#c3f400",
+  onSecondary: "#283500",
+  tertiary:    "#00daf3",
+  error:       "#ffb4ab",
+  errorContainer: "#93000a",
+  onSurface:   "#e2e2e2",
+  onSurfaceVar:"#dcbed4",
+  outline:     "#a4899d",
 };
+
+const coachAccent: Record<string, string> = {
+  coach1: C.error,
+  coach2: C.primary,
+  coach3: C.tertiary,
+};
+
+const ScanlineOverlay = styled.div`
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  opacity: 0.15;
+  background:
+    linear-gradient(rgba(18,16,16,0) 50%, rgba(0,0,0,0.12) 50%),
+    linear-gradient(90deg, rgba(255,0,0,0.02), rgba(0,255,0,0.01), rgba(0,0,255,0.02));
+  background-size: 100% 4px, 3px 100%;
+`;
 
 const Header = styled.header`
   position: fixed;
   top: 0; left: 0; width: 100%;
   z-index: 50;
+  height: 5rem;
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 1rem 1.5rem;
-  background: ${C.surfaceLow};
-  border-bottom: 4px solid ${C.secondary};
-  box-shadow: 0 4px 20px rgba(195, 244, 0, 0.3);
+  justify-content: space-between;
+  padding: 0 1.5rem;
+  background: rgba(19,19,19,0.5);
+  backdrop-filter: blur(20px);
+  box-shadow: 0 0 20px rgba(255,0,255,0.3);
 `;
 
 const Logo = styled.h1`
@@ -37,74 +56,79 @@ const Logo = styled.h1`
   font-style: italic;
   font-size: 1.75rem;
   text-transform: uppercase;
-  letter-spacing: -0.05em;
+  letter-spacing: -0.04em;
   color: ${C.primary};
   margin: 0;
-  text-shadow: 0 0 10px rgba(255, 124, 245, 0.8);
+  text-shadow: 0 0 12px rgba(255,0,255,0.6);
 `;
 
 const Main = styled.main`
-  padding: 6rem 1.5rem 8rem;
-  max-width: 1024px;
+  position: relative;
+  z-index: 10;
+  padding: 8rem 1.5rem 6rem;
+  min-height: 100vh;
+  max-width: 900px;
   margin: 0 auto;
 `;
 
-const PageTitle = styled.h2`
+const PageTitle = styled.h2<{ accent: string }>`
   font-family: 'Epilogue', sans-serif;
   font-weight: 900;
-  font-style: italic;
-  font-size: clamp(2.5rem, 8vw, 5rem);
+  font-size: clamp(3rem, 9vw, 5.5rem);
   text-transform: uppercase;
-  letter-spacing: -0.05em;
+  letter-spacing: -0.04em;
+  line-height: 1;
   color: ${C.onSurface};
-  border-left: 8px solid ${C.primary};
+  margin: 0 0 2rem;
+  border-left: 8px solid ${({ accent }) => accent};
   padding-left: 1.5rem;
-  margin: 0 0 2rem 0;
 
-  span { color: ${C.primary}; text-shadow: 4px 4px 0px #580058; }
+  span {
+    color: ${({ accent }) => accent};
+    text-shadow: 0 0 12px ${({ accent }) => accent}88;
+  }
 `;
 
-const ResultCard = styled.div`
+const ResultCard = styled.div<{ accent: string }>`
   background: ${C.surface};
-  border: 2px solid rgba(72, 72, 71, 0.3);
+  border: 2px solid ${C.surfaceHigh};
   padding: 2.5rem;
-  margin-bottom: 1.5rem;
-  box-shadow: 0 0 30px rgba(255, 124, 245, 0.15);
+  margin-bottom: 2rem;
+  box-shadow: 8px 8px 0px ${({ accent }) => accent}44;
 `;
 
 const SectionLabel = styled.p`
   font-family: 'Space Grotesk', sans-serif;
-  font-size: 0.7rem;
+  font-size: 0.65rem;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.2em;
   color: ${C.tertiary};
-  margin: 0 0 0.75rem 0;
+  margin: 0 0 1rem;
 `;
 
 const MotivationText = styled.p`
   font-family: 'Epilogue', sans-serif;
   font-weight: 700;
   font-size: 1.5rem;
-  line-height: 1.4;
-  margin: 0;
+  line-height: 1.5;
   color: ${C.onSurface};
+  margin: 0;
+  white-space: pre-wrap;
 `;
 
 const MetaGrid = styled.div`
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 1rem;
-  margin-top: 1.5rem;
-
-  @media (max-width: 600px) {
-    grid-template-columns: 1fr;
-  }
+  margin-top: 2rem;
+  @media (max-width: 600px) { grid-template-columns: 1fr; }
 `;
 
-const MetaCard = styled.div`
+const MetaCard = styled.div<{ accent: string }>`
   background: ${C.surfaceHigh};
   padding: 1rem;
-  border-bottom: 4px solid ${C.secondary};
+  border-bottom: 4px solid ${({ accent }) => accent};
 `;
 
 const MetaValue = styled.p`
@@ -114,85 +138,59 @@ const MetaValue = styled.p`
   color: ${C.onSurface};
 `;
 
-const BackButton = styled.button`
+const ButtonRow = styled.div`
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+`;
+
+const PrimaryBtn = styled.button`
   background: ${C.primary};
   color: ${C.onPrimary};
   border: none;
-  padding: 1.25rem 3rem;
+  padding: 1rem 2.5rem;
   font-family: 'Epilogue', sans-serif;
   font-weight: 900;
   font-style: italic;
-  font-size: 1.25rem;
+  font-size: 1.1rem;
   text-transform: uppercase;
   letter-spacing: -0.02em;
   cursor: pointer;
   box-shadow: 6px 6px 0px ${C.secondary};
-  transition: transform 0.15s, box-shadow 0.15s;
-
-  &:hover {
-    transform: scale(1.02);
-  }
-  &:active {
-    transform: scale(0.97);
-    box-shadow: 3px 3px 0px ${C.secondary};
-  }
+  &:hover { box-shadow: 8px 8px 0px ${C.tertiary}; }
+  &:active { transform: translate(4px,4px); box-shadow: 2px 2px 0px ${C.secondary}; }
 `;
 
-const BottomNav = styled.nav`
-  position: fixed;
-  bottom: 0; left: 0; width: 100%;
-  z-index: 50;
-  display: flex;
-  justify-content: space-around;
-  height: 5rem;
-  background: ${C.bg};
-  border-top: 4px solid ${C.primary};
-  box-shadow: 0 -4px 20px rgba(255, 124, 245, 0.4);
-`;
-
-interface NavItemProps { active?: boolean; }
-const NavItem = styled.a<NavItemProps>`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  flex: 1;
-  gap: 0.25rem;
-  text-decoration: none;
-  cursor: pointer;
-  background: ${({ active }) => active ? C.secondary : "transparent"};
-  color: ${({ active }) => active ? C.onSecondary : C.primary};
-  opacity: ${({ active }) => active ? 1 : 0.6};
-  transition: all 0.2s;
-
-  &:hover {
-    background: #1a1a1a;
-    opacity: 1;
-  }
-`;
-
-const NavLabel = styled.span`
+const SecondaryBtn = styled.button`
+  background: transparent;
+  border: 2px solid ${C.secondary};
+  color: ${C.secondary};
+  padding: 1rem 2.5rem;
   font-family: 'Space Grotesk', sans-serif;
-  font-size: 0.55rem;
   font-weight: 700;
+  font-size: 0.8rem;
   text-transform: uppercase;
-  letter-spacing: 0.15em;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  &:hover { background: ${C.secondary}22; }
+  &:active { transform: translate(2px,2px); }
 `;
 
 const Result: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const result = location.state?.result;
+  const result   = location.state?.result;
+  const coach    = location.state?.coach ?? "coach1";
+  const coachName = location.state?.coachName ?? "Coach";
+  const accent   = coachAccent[coach] ?? C.primary;
 
   if (!result) {
     return (
       <>
-        <Header>
-          <Logo>HUMOTIVATOREN</Logo>
-        </Header>
+        <Header><Logo>HUMOTIVATOREN</Logo></Header>
         <Main>
-          <PageTitle>INGEN<br /><span>MOTIVASJON.</span></PageTitle>
-          <BackButton onClick={() => navigate("/")}>← PRØV IGJEN</BackButton>
+          <PageTitle accent={C.error}>INGEN<br /><span>MOTIVASJON.</span></PageTitle>
+          <PrimaryBtn onClick={() => navigate("/")}>← TILBAKE</PrimaryBtn>
         </Main>
       </>
     );
@@ -200,42 +198,38 @@ const Result: React.FC = () => {
 
   return (
     <>
+      <ScanlineOverlay />
       <Header>
-        <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-          <span className="material-symbols-outlined" style={{ color: "#ff7cf5", cursor: "pointer" }}>menu</span>
-          <Logo>HUMOTIVATOREN</Logo>
-        </div>
-        <span className="material-symbols-outlined" style={{ color: "#ff7cf5", cursor: "pointer" }}>electric_bolt</span>
+        <Logo>HUMOTIVATOREN</Logo>
+        <span className="material-symbols-outlined" style={{ color: C.onSurface, cursor: "pointer" }}>settings</span>
       </Header>
 
       <Main>
-        <PageTitle>DIN<br /><span>MOTIVASJON.</span></PageTitle>
+        <PageTitle accent={accent}>
+          DIN<br /><span>MOTIVASJON.</span>
+        </PageTitle>
 
-        <ResultCard>
-          <SectionLabel>MOTIVASJON</SectionLabel>
+        <ResultCard accent={accent}>
+          <SectionLabel>FRA {coachName.toUpperCase()}</SectionLabel>
           <MotivationText>{result.motivation || "Ingen tekst mottatt."}</MotivationText>
 
           <MetaGrid>
-            <MetaCard>
-              <SectionLabel>MODELL</SectionLabel>
-              <MetaValue>{result.model_used || "ukjent"}</MetaValue>
+            <MetaCard accent={accent}>
+              <SectionLabel>COACH</SectionLabel>
+              <MetaValue>{result.coach ?? coach}</MetaValue>
             </MetaCard>
-            <MetaCard>
+            <MetaCard accent={accent}>
               <SectionLabel>SIKKERHETSNOTE</SectionLabel>
-              <MetaValue>{result.safety_note || "ingen"}</MetaValue>
+              <MetaValue>{result.safety_note ?? "ingen"}</MetaValue>
             </MetaCard>
           </MetaGrid>
         </ResultCard>
 
-        <BackButton onClick={() => navigate("/")}>← FÅ NY INSPIRASJON</BackButton>
+        <ButtonRow>
+          <PrimaryBtn onClick={() => navigate(`/prompt/${coach}`)}>← NY OPPGAVE</PrimaryBtn>
+          <SecondaryBtn onClick={() => navigate("/")}>BYTT COACH</SecondaryBtn>
+        </ButtonRow>
       </Main>
-
-      <BottomNav>
-        <NavItem href="#"><span className="material-symbols-outlined">confirmation_number</span><NavLabel>TOUR</NavLabel></NavItem>
-        <NavItem active href="#"><span className="material-symbols-outlined">speaker_group</span><NavLabel>STAGES</NavLabel></NavItem>
-        <NavItem href="#"><span className="material-symbols-outlined">graphic_eq</span><NavLabel>VIBES</NavLabel></NavItem>
-        <NavItem href="#"><span className="material-symbols-outlined">badge</span><NavLabel>PASS</NavLabel></NavItem>
-      </BottomNav>
     </>
   );
 };
