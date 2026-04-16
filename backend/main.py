@@ -7,6 +7,7 @@ import re
 
 import llm_service
 import youtube_service
+import spotify_service
 
 app = FastAPI(title="HuMotivatoren API", version="0.1.0")
 
@@ -63,6 +64,57 @@ COACH_MEDIA_BIAS: dict[CoachType, str] = {
     CoachType.coach1: "motivation speech discipline workout",
     CoachType.coach2: "guided meditation calm mindfulness",
     CoachType.coach3: "ambient meditation spiritual nature sounds",
+}
+
+COACH_MUSIC_BIAS: dict[CoachType, str] = {
+    CoachType.coach1: "workout motivation power",
+    CoachType.coach2: "calm relaxing piano",
+    CoachType.coach3: "ambient spiritual meditation",
+}
+
+COACH_FALLBACK_YOUTUBE: dict[CoachType, dict] = {
+    CoachType.coach1: {
+        "type": "youtube",
+        "title": "Best Motivational Speech – David Goggins",
+        "url": "https://www.youtube.com/watch?v=78I9dTB9vqM",
+        "thumbnail": "https://i.ytimg.com/vi/78I9dTB9vqM/hqdefault.jpg",
+    },
+    CoachType.coach2: {
+        "type": "youtube",
+        "title": "10-Minute Guided Meditation for Self-Compassion",
+        "url": "https://www.youtube.com/watch?v=izV_st2ISMU",
+        "thumbnail": "https://i.ytimg.com/vi/izV_st2ISMU/hqdefault.jpg",
+    },
+    CoachType.coach3: {
+        "type": "youtube",
+        "title": "Alan Watts – The Real You",
+        "url": "https://www.youtube.com/watch?v=mMRrCYPxD0I",
+        "thumbnail": "https://i.ytimg.com/vi/mMRrCYPxD0I/hqdefault.jpg",
+    },
+}
+
+COACH_FALLBACK_SPOTIFY: dict[CoachType, dict] = {
+    CoachType.coach1: {
+        "type": "spotify",
+        "title": "Eye of the Tiger",
+        "artist": "Survivor",
+        "url": "https://open.spotify.com/track/2KH16WveTQWT6KOG9Rg6e2",
+        "image": "https://i.scdn.co/image/ab67616d0000b2734a052b99c042dc15f933145b",
+    },
+    CoachType.coach2: {
+        "type": "spotify",
+        "title": "Weightless",
+        "artist": "Marconi Union",
+        "url": "https://open.spotify.com/track/6kkwzB6hXLIONkEk9JciA6",
+        "image": "https://i.scdn.co/image/ab67616d0000b273b26f5bdec49fade2a6c1e46a",
+    },
+    CoachType.coach3: {
+        "type": "spotify",
+        "title": "Experience",
+        "artist": "Ludovico Einaudi",
+        "url": "https://open.spotify.com/track/1BncfTJAMEHRSE0lqb0GbY",
+        "image": "https://i.scdn.co/image/ab67616d0000b27345c0ef8c8f4a0fbd412fa3a0",
+    },
 }
 
 STRUCTURED_SUFFIX = (
@@ -169,13 +221,18 @@ def motivate(
             search_query = f"{fallback} {bias}".strip()
         media_result = youtube_service.search_video(search_query)
 
+        # Also enrich with a Spotify track using coach-specific music bias
+        music_bias = COACH_MUSIC_BIAS.get(coach, "")
+        music_query = f"{media_query} {music_bias}".strip() if media_query else f"{task.strip() or 'motivasjon'} {music_bias}".strip()
+        spotify_result = spotify_service.search_track(music_query)
+
         result: dict = {
             "motivation": safe_text,
             "coach": coach.value,
             "safety_note": "Filtered for respectful tone" if filtered else "Tone OK",
+            "media": media_result or COACH_FALLBACK_YOUTUBE[coach],
+            "spotify": spotify_result or COACH_FALLBACK_SPOTIFY[coach],
         }
-        if media_result:
-            result["media"] = media_result
 
         return result
     except Exception as e:

@@ -10,6 +10,16 @@ import main
 client = TestClient(main.app)
 
 
+def _fake_spotify(query, limit=1):
+    return {
+        "type": "spotify",
+        "title": "Test Track",
+        "artist": "Test Artist",
+        "url": "https://open.spotify.com/track/fake123",
+        "image": "",
+    }
+
+
 def test_health_ok():
     response = client.get("/health")
     assert response.status_code == 200
@@ -42,6 +52,7 @@ def test_motivate_ok_plain_text(monkeypatch):
 
     monkeypatch.setattr(main.llm_service, "chat", fake_chat)
     monkeypatch.setattr(main.youtube_service, "search_video", fake_search)
+    monkeypatch.setattr(main.spotify_service, "search_track", _fake_spotify)
 
     response = client.get("/motivate?coach=coach1&task=Forberede+presentasjon")
 
@@ -51,6 +62,7 @@ def test_motivate_ok_plain_text(monkeypatch):
     assert payload["coach"] == "coach1"
     assert payload["safety_note"] == "Tone OK"
     assert payload["media"]["type"] == "youtube"
+    assert payload["spotify"]["type"] == "spotify"
 
 
 def test_motivate_ok_with_media(monkeypatch):
@@ -73,6 +85,7 @@ def test_motivate_ok_with_media(monkeypatch):
 
     monkeypatch.setattr(main.llm_service, "chat", fake_chat)
     monkeypatch.setattr(main.youtube_service, "search_video", fake_search)
+    monkeypatch.setattr(main.spotify_service, "search_track", _fake_spotify)
 
     response = client.get("/motivate?coach=coach1&task=Trene+hardt")
 
@@ -81,6 +94,7 @@ def test_motivate_ok_with_media(monkeypatch):
     assert payload["motivation"] == "Kom igjen! Du har dette!"
     assert payload["media"]["type"] == "youtube"
     assert "youtube.com" in payload["media"]["url"]
+    assert payload["spotify"]["type"] == "spotify"
 
 
 def test_motivate_ok_media_none(monkeypatch):
@@ -103,6 +117,7 @@ def test_motivate_ok_media_none(monkeypatch):
 
     monkeypatch.setattr(main.llm_service, "chat", fake_chat)
     monkeypatch.setattr(main.youtube_service, "search_video", fake_search)
+    monkeypatch.setattr(main.spotify_service, "search_track", _fake_spotify)
 
     response = client.get("/motivate?coach=coach1&task=Les+bok")
 
@@ -110,6 +125,7 @@ def test_motivate_ok_media_none(monkeypatch):
     payload = response.json()
     assert payload["motivation"] == "Bare gjør det."
     assert payload["media"]["type"] == "youtube"
+    assert payload["spotify"]["type"] == "spotify"
 
 
 def test_motivate_without_task(monkeypatch):
@@ -126,11 +142,13 @@ def test_motivate_without_task(monkeypatch):
 
     monkeypatch.setattr(main.llm_service, "chat", fake_chat)
     monkeypatch.setattr(main.youtube_service, "search_video", fake_search)
+    monkeypatch.setattr(main.spotify_service, "search_track", _fake_spotify)
 
     response = client.get("/motivate?coach=coach2")
 
     assert response.status_code == 200
     assert "motivation" in response.json()
+    assert response.json()["spotify"]["type"] == "spotify"
 
 
 def test_motivate_safety_filter(monkeypatch):
@@ -147,6 +165,7 @@ def test_motivate_safety_filter(monkeypatch):
 
     monkeypatch.setattr(main.llm_service, "chat", fake_chat)
     monkeypatch.setattr(main.youtube_service, "search_video", fake_search)
+    monkeypatch.setattr(main.spotify_service, "search_track", _fake_spotify)
 
     response = client.get("/motivate?coach=coach1&task=Skrive+rapport")
 
