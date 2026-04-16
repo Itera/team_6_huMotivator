@@ -151,6 +151,76 @@ const MetaValue = styled.p`
   color: ${C.onSurface};
 `;
 
+const MediaSection = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  @media (max-width: 600px) { grid-template-columns: 1fr; }
+`;
+
+const MediaCard = styled.a<{ accent: string }>`
+  display: flex;
+  gap: 1rem;
+  background: ${C.surface};
+  border: 2px solid ${C.surfaceHigh};
+  padding: 1rem;
+  text-decoration: none;
+  color: ${C.onSurface};
+  box-shadow: 6px 6px 0px ${({ accent }) => accent}44;
+  transition: border-color 0.15s;
+  animation: ${cardEntrance} 0.5s cubic-bezier(0.22,1,0.36,1) both;
+  animation-delay: 0.15s;
+
+  &:hover {
+    border-color: ${({ accent }) => accent};
+    box-shadow: 8px 8px 0px ${({ accent }) => accent}66;
+  }
+`;
+
+const MediaThumb = styled.img`
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  flex-shrink: 0;
+  background: ${C.surfaceHigh};
+`;
+
+const MediaInfo = styled.div`
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+`;
+
+const MediaType = styled.span<{ color: string }>`
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: ${({ color }) => color};
+  margin-bottom: 0.35rem;
+`;
+
+const MediaTitle = styled.p`
+  font-family: 'Epilogue', sans-serif;
+  font-weight: 700;
+  font-size: 0.95rem;
+  margin: 0;
+  color: ${C.onSurface};
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+`;
+
+const MediaArtist = styled.p`
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.75rem;
+  margin: 0.2rem 0 0;
+  color: ${C.onSurfaceVar};
+`;
+
 const ButtonRow = styled.div`
   display: flex;
   gap: 1rem;
@@ -189,12 +259,27 @@ const SecondaryBtn = styled.button`
   &:active { transform: translate(2px,2px); }
 `;
 
+const FallbackBanner = styled.div`
+  background: ${C.errorContainer};
+  color: ${C.error};
+  padding: 1rem 1.5rem;
+  margin-bottom: 2rem;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  border-left: 6px solid ${C.error};
+  animation: ${cardEntrance} 0.4s cubic-bezier(0.22,1,0.36,1) both;
+`;
+
 const Result: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const result   = location.state?.result;
   const coach    = location.state?.coach ?? "coach1";
   const coachName = location.state?.coachName ?? "Coach";
+  const isFallback = location.state?.isFallback ?? false;
   const accent   = coachAccent[coach] ?? C.primary;
 
   if (!result) {
@@ -223,6 +308,12 @@ const Result: React.FC = () => {
           DIN<br /><span>MOTIVASJON.</span>
         </PageTitle>
 
+        {isFallback && (
+          <FallbackBanner>
+            ⚠ SIGNAL TAPT — Serveren svarte ikke. Her er en nød-motivasjon i mellomtiden.
+          </FallbackBanner>
+        )}
+
         <ResultCard accent={accent}>
           <SectionLabel>FRA {coachName.toUpperCase()}</SectionLabel>
           <MotivationText>{result.motivation || "Ingen tekst mottatt."}</MotivationText>
@@ -238,6 +329,30 @@ const Result: React.FC = () => {
             </MetaCard>
           </MetaGrid>
         </ResultCard>
+
+        {(result.media || result.spotify) && (
+          <MediaSection>
+            {result.media && result.media.type === "youtube" && (
+              <MediaCard href={result.media.url} target="_blank" rel="noopener noreferrer" accent="#ff0000">
+                <MediaThumb src={result.media.thumbnail} alt={result.media.title} />
+                <MediaInfo>
+                  <MediaType color="#ff0000">▶ YOUTUBE</MediaType>
+                  <MediaTitle>{result.media.title}</MediaTitle>
+                </MediaInfo>
+              </MediaCard>
+            )}
+            {result.spotify && result.spotify.type === "spotify" && (
+              <MediaCard href={result.spotify.url} target="_blank" rel="noopener noreferrer" accent="#1DB954">
+                <MediaThumb src={result.spotify.image} alt={result.spotify.title} />
+                <MediaInfo>
+                  <MediaType color="#1DB954">♫ SPOTIFY</MediaType>
+                  <MediaTitle>{result.spotify.title}</MediaTitle>
+                  <MediaArtist>{result.spotify.artist}</MediaArtist>
+                </MediaInfo>
+              </MediaCard>
+            )}
+          </MediaSection>
+        )}
 
         <ButtonRow>
           <PrimaryBtn onClick={() => navigate(`/prompt/${coach}`)}>← NY OPPGAVE</PrimaryBtn>

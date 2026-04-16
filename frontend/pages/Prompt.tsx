@@ -259,7 +259,25 @@ const Prompt: React.FC = () => {
       const result = await motivate(coach, task);
       navigate("/result", { state: { result, coach, coachName: meta.name } });
     } catch {
-      alert("Klarte ikke å hente motivasjon. Prøv igjen!");
+      const fallback = {
+        motivation: "Serveren svarte ikke, men husk: du har allerede tatt det viktigste steget – du spurte om motivasjon. Nå er det bare å kjøre på! 💪",
+        coach,
+        safety_note: "Fallback – backend utilgjengelig",
+        media: {
+          type: "youtube",
+          title: "Best Motivational Speech – Never Give Up",
+          url: "https://www.youtube.com/watch?v=78I9dTB9vqM",
+          thumbnail: "https://i.ytimg.com/vi/78I9dTB9vqM/hqdefault.jpg",
+        },
+        spotify: {
+          type: "spotify",
+          title: "Eye of the Tiger",
+          artist: "Survivor",
+          url: "https://open.spotify.com/track/2KH16WveTQWT6KOG9Rg6e2",
+          image: "https://i.scdn.co/image/ab67616d0000b2734a052b99c042dc15f933145b",
+        },
+      };
+      navigate("/result", { state: { result: fallback, coach, coachName: meta.name, isFallback: true } });
     } finally {
       setLoading(false);
     }

@@ -1,9 +1,26 @@
 const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:8000";
 
+export interface MediaResult {
+  type: string;
+  title: string;
+  url: string;
+  thumbnail?: string;
+}
+
+export interface SpotifyResult {
+  type: string;
+  title: string;
+  artist: string;
+  url: string;
+  image?: string;
+}
+
 export interface MotivateResponse {
   motivation: string;
   coach: string;
   safety_note: string;
+  media?: MediaResult;
+  spotify?: SpotifyResult;
 }
 
 export async function motivate(coach: string, task: string): Promise<MotivateResponse> {

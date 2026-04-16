@@ -2,8 +2,11 @@ from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from enum import Enum
 from pydantic import BaseModel, Field, field_validator
+from dotenv import load_dotenv
 import json
 import re
+
+load_dotenv()
 
 import llm_service
 import youtube_service
