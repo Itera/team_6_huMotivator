@@ -1,22 +1,26 @@
 const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:8000";
 
+export interface MediaResult {
+  type: string;
+  title: string;
+  url: string;
+  thumbnail?: string;
+}
+
+export interface SpotifyResult {
+  type: string;
+  title: string;
+  artist: string;
+  url: string;
+  image?: string;
+}
+
 export interface MotivateResponse {
   motivation: string;
   coach: string;
   safety_note: string;
-  media?: {
-    type: string;
-    title: string;
-    url: string;
-    thumbnail?: string;
-  };
-  spotify?: {
-    type: string;
-    title: string;
-    artist: string;
-    url: string;
-    image?: string;
-  };
+  media?: MediaResult;
+  spotify?: SpotifyResult;
 }
 
 export interface PoemResponse {
@@ -26,8 +30,11 @@ export interface PoemResponse {
 }
 
 export async function motivate(coach: string, task: string): Promise<MotivateResponse> {
-  const params = new URLSearchParams({ coach, task });
-  const response = await fetch(`${API_BASE}/motivate?${params}`);
+  const response = await fetch(`${API_BASE}/motivate`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ coach, task }),
+  });
   if (!response.ok) throw new Error(`Backend error (${response.status})`);
   return response.json();
 }

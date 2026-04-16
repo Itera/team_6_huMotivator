@@ -77,13 +77,16 @@
       "_type": "request",
       "parentId": "fld_llm",
       "name": "Motivate - Coach 1 (Militær)",
-      "method": "GET",
+      "method": "POST",
       "url": "http://localhost:8000/motivate",
-      "headers": [],
-      "body": {},
-      "parameters": [
-        { "name": "coach", "value": "coach1" }
+      "headers": [
+        { "name": "Content-Type", "value": "application/json" }
       ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"coach\": \"coach1\",\n  \"task\": \"Forberede presentasjon\"\n}"
+      },
+      "parameters": [],
       "authentication": {},
       "created": 1713264000000,
       "modified": 1713264000000
@@ -93,13 +96,16 @@
       "_type": "request",
       "parentId": "fld_llm",
       "name": "Motivate - Coach 2 (Terapeut)",
-      "method": "GET",
+      "method": "POST",
       "url": "http://localhost:8000/motivate",
-      "headers": [],
-      "body": {},
-      "parameters": [
-        { "name": "coach", "value": "coach2" }
+      "headers": [
+        { "name": "Content-Type", "value": "application/json" }
       ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"coach\": \"coach2\",\n  \"task\": \"Lese til eksamen\"\n}"
+      },
+      "parameters": [],
       "authentication": {},
       "created": 1713264000000,
       "modified": 1713264000000
@@ -109,13 +115,16 @@
       "_type": "request",
       "parentId": "fld_llm",
       "name": "Motivate - Coach 3 (Spirituell)",
-      "method": "GET",
+      "method": "POST",
       "url": "http://localhost:8000/motivate",
-      "headers": [],
-      "body": {},
-      "parameters": [
-        { "name": "coach", "value": "coach3" }
+      "headers": [
+        { "name": "Content-Type", "value": "application/json" }
       ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"coach\": \"coach3\",\n  \"task\": \"Finne indre ro\"\n}"
+      },
+      "parameters": [],
       "authentication": {},
       "created": 1713264000000,
       "modified": 1713264000000
