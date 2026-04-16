@@ -11,16 +11,14 @@ done
 echo "✅ Ollama er klar!"
 
 echo "📦 Sjekker om modell '$MODEL' finnes..."
-if ! curl -sf "$OLLAMA_URL/api/tags" | python -c "
+if ! curl -s "$OLLAMA_URL/api/tags" | python -c "
 import sys, json
 models = [m['name'] for m in json.load(sys.stdin).get('models', [])]
 sys.exit(0 if any('$MODEL' in m for m in models) else 1)
 " 2>/dev/null; then
     echo "⬇️  Laster ned modell '$MODEL'... (dette kan ta litt tid)"
-    curl -sf "$OLLAMA_URL/api/pull" -d "{\"name\": \"$MODEL\"}" | while read -r line; do
-        status=$(echo "$line" | python -c "import sys,json; print(json.load(sys.stdin).get('status',''))" 2>/dev/null)
-        [ -n "$status" ] && echo "   $status"
-    done
+    curl -s "$OLLAMA_URL/api/pull" -d "{\"name\": \"$MODEL\", \"stream\": false}"
+    echo ""
     echo "✅ Modell '$MODEL' er klar!"
 else
     echo "✅ Modell '$MODEL' finnes allerede."

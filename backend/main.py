@@ -17,12 +17,12 @@ app.add_middleware(
 
 class MotivateRequest(BaseModel):
     task: str
-    model: str = "llama3.2"
+    model: str = "gemma3:1b"
 
 
 class PoemRequest(BaseModel):
     topic: str
-    model: str = "llama3.2"
+    model: str = "gemma3:1b"
 
 
 @app.get("/")
@@ -36,16 +36,16 @@ def health():
 
 
 @app.get("/models")
-async def models():
+def models():
     """List available LLM models in Ollama."""
     try:
-        return {"models": await llm_service.list_models()}
+        return {"models": llm_service.list_models()}
     except Exception as e:
         raise HTTPException(status_code=502, detail=f"Ollama unavailable: {e}")
 
 
 @app.post("/motivate")
-async def motivate(req: MotivateRequest):
+def motivate(req: MotivateRequest):
     """Send a task description and get motivational content back."""
     prompt = (
         "Du er HuMotivatoren – et profesjonelt verktøy med intelligent humor. "
@@ -56,14 +56,14 @@ async def motivate(req: MotivateRequest):
         "Gi et motiverende, morsomt og kort svar på norsk."
     )
     try:
-        response = await llm_service.generate(prompt, model=req.model)
+        response = llm_service.generate(prompt, model=req.model)
         return {"motivation": response}
     except Exception as e:
         raise HTTPException(status_code=502, detail=f"LLM error: {e}")
 
 
 @app.post("/poem")
-async def poem(req: PoemRequest):
+def poem(req: PoemRequest):
     """Generate a short poem about a given topic."""
     prompt = (
         "Skriv et kort og morsomt dikt på norsk (maks 8 linjer) "
@@ -71,7 +71,7 @@ async def poem(req: PoemRequest):
         "Diktet skal være lett, humoristisk og motiverende."
     )
     try:
-        response = await llm_service.generate(prompt, model=req.model)
+        response = llm_service.generate(prompt, model=req.model)
         return {"poem": response}
     except Exception as e:
         raise HTTPException(status_code=502, detail=f"LLM error: {e}")

@@ -1,29 +1,26 @@
 {
   "_type": "export",
-  "export_format": 4,
-  "export_source": "humotivatoren",
+  "__export_format": 4,
+  "__export_date": "2026-04-16T12:00:00.000Z",
+  "__export_source": "insomnia.desktop.app:v2024.1.0",
   "resources": [
     {
       "_id": "wrk_humotivatoren",
       "_type": "workspace",
+      "parentId": null,
       "name": "HuMotivatoren API",
       "description": "API-endepunkter for HuMotivatoren",
-      "scope": "collection"
-    },
-    {
-      "_id": "env_base",
-      "_type": "environment",
-      "parentId": "wrk_humotivatoren",
-      "name": "Local",
-      "data": {
-        "base_url": "http://localhost:8000"
-      }
+      "scope": "collection",
+      "created": 1713264000000,
+      "modified": 1713264000000
     },
     {
       "_id": "fld_general",
       "_type": "request_group",
       "parentId": "wrk_humotivatoren",
-      "name": "General"
+      "name": "General",
+      "created": 1713264000000,
+      "modified": 1713264000000
     },
     {
       "_id": "req_root",
@@ -31,8 +28,13 @@
       "parentId": "fld_general",
       "name": "Root",
       "method": "GET",
-      "url": "{{ _.base_url }}/",
-      "headers": []
+      "url": "http://localhost:8000/",
+      "body": {},
+      "headers": [],
+      "parameters": [],
+      "authentication": {},
+      "created": 1713264000000,
+      "modified": 1713264000000
     },
     {
       "_id": "req_health",
@@ -40,14 +42,21 @@
       "parentId": "fld_general",
       "name": "Health Check",
       "method": "GET",
-      "url": "{{ _.base_url }}/health",
-      "headers": []
+      "url": "http://localhost:8000/health",
+      "body": {},
+      "headers": [],
+      "parameters": [],
+      "authentication": {},
+      "created": 1713264000000,
+      "modified": 1713264000000
     },
     {
       "_id": "fld_llm",
       "_type": "request_group",
       "parentId": "wrk_humotivatoren",
-      "name": "LLM"
+      "name": "LLM",
+      "created": 1713264000000,
+      "modified": 1713264000000
     },
     {
       "_id": "req_models",
@@ -55,8 +64,13 @@
       "parentId": "fld_llm",
       "name": "List Models",
       "method": "GET",
-      "url": "{{ _.base_url }}/models",
-      "headers": []
+      "url": "http://localhost:8000/models",
+      "body": {},
+      "headers": [],
+      "parameters": [],
+      "authentication": {},
+      "created": 1713264000000,
+      "modified": 1713264000000
     },
     {
       "_id": "req_motivate",
@@ -64,14 +78,18 @@
       "parentId": "fld_llm",
       "name": "Motivate",
       "method": "POST",
-      "url": "{{ _.base_url }}/motivate",
+      "url": "http://localhost:8000/motivate",
       "headers": [
         { "name": "Content-Type", "value": "application/json" }
       ],
       "body": {
         "mimeType": "application/json",
-        "text": "{\n  \"task\": \"Jeg skal lese nyhetene og trenger inspirasjon\",\n  \"model\": \"llama3.2\"\n}"
-      }
+        "text": "{\n  \"task\": \"Jeg skal lese nyhetene og trenger inspirasjon\",\n  \"model\": \"gemma3:1b\"\n}"
+      },
+      "parameters": [],
+      "authentication": {},
+      "created": 1713264000000,
+      "modified": 1713264000000
     },
     {
       "_id": "req_poem",
@@ -79,14 +97,18 @@
       "parentId": "fld_llm",
       "name": "Poem",
       "method": "POST",
-      "url": "{{ _.base_url }}/poem",
+      "url": "http://localhost:8000/poem",
       "headers": [
         { "name": "Content-Type", "value": "application/json" }
       ],
       "body": {
         "mimeType": "application/json",
-        "text": "{\n  \"topic\": \"kaffe på kontoret\",\n  \"model\": \"llama3.2\"\n}"
-      }
+        "text": "{\n  \"topic\": \"kaffe på kontoret\",\n  \"model\": \"gemma3:1b\"\n}"
+      },
+      "parameters": [],
+      "authentication": {},
+      "created": 1713264000000,
+      "modified": 1713264000000
     }
   ]
 }
