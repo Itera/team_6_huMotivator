@@ -57,3 +57,54 @@ One team member sets up a repo on GitHub. Help each other get it running on all 
 Everyone on the team should create a PR, i.e., try at least one prompt and build something that becomes part of the solution.
 
 The goal is not perfection, but to play with AI, test, and produce a presentable (un)professional result.
+
+## Demo Scaffold
+
+This repo now includes a demo-ready scaffold with:
+
+- Frontend UI: `frontend/index.html` + `frontend/app.js`
+- Backend API: `backend/main.py`
+- Backend tests: `backend/tests/test_main.py`
+
+## Run Backend (Docker)
+
+```bash
+cd backend
+cp .env.example .env
+docker compose up --build
+```
+
+Backend API is available on `http://localhost:8000`.
+
+## Run Frontend (Static)
+
+In a separate terminal:
+
+```bash
+cd frontend
+python3 -m http.server 5500
+```
+
+Open `http://localhost:5500` and generate motivation from the form.
+
+## Run Tests
+
+```bash
+cd backend
+docker compose run --rm backend pytest -q
+```
+
+## Main API Endpoints
+
+- `GET /health`
+- `GET /models`
+- `POST /motivate`
+
+Example request:
+
+```json
+{
+	"task": "I need inspiration to prepare the hackathon demo",
+	"model": "llama3.2"
+}
+```

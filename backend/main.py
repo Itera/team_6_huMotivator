@@ -1,6 +1,6 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, field_validator
 
 import llm_service
 
@@ -16,8 +16,34 @@ app.add_middleware(
 
 
 class MotivateRequest(BaseModel):
-    task: str
+    task: str = Field(min_length=3, max_length=300)
     model: str = "llama3.2"
+
+    @field_validator("task")
+    @classmethod
+    def normalize_task(cls, value: str) -> str:
+        normalized = value.strip()
+        if not normalized:
+            raise ValueError("task must not be empty")
+        return normalized
+
+
+FORBIDDEN_TERMS = [
+    "hate",
+    "racist",
+    "sexist",
+    "kill",
+]
+
+
+def _apply_safety_filter(text: str) -> tuple[str, bool]:
+    lowered = text.lower()
+    if any(term in lowered for term in FORBIDDEN_TERMS):
+        return (
+            "Fortsett steg for steg. Du har kontroll, og neste lille deloppgave gir fart.",
+            True,
+        )
+    return text, False
 
 
 @app.get("/")
@@ -52,6 +78,11 @@ async def motivate(req: MotivateRequest):
     )
     try:
         response = await llm_service.generate(prompt, model=req.model)
-        return {"motivation": response}
+        filtered, filtered_flag = _apply_safety_filter(response)
+        return {
+            "motivation": filtered,
+            "model_used": req.model,
+            "safety_note": "Filtered for respectful tone" if filtered_flag else "Tone OK",
+        }
     except Exception as e:
         raise HTTPException(status_code=502, detail=f"LLM error: {e}")
