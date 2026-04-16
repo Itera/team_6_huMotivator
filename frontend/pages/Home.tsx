@@ -364,7 +364,7 @@ const CoachCard = styled.div<CardAccent>`
 `;
 
 const CardImageBox = styled.div`
-  height: 120px;
+  aspect-ratio: 1;
   overflow: hidden;
   background: ${C.surfaceLow};
   position: relative;
@@ -383,6 +383,19 @@ const CardImagePlaceholder = styled.div<{ color: string }>`
   color: ${({ color }) => color};
   opacity: 0.4;
   text-shadow: 0 0 40px currentColor;
+`;
+
+const CoachImage = styled.img`
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  filter: grayscale(1) contrast(1.2);
+  transition: filter 0.15s steps(1);
+
+  &:hover {
+    filter: none;
+  }
 `;
 
 const GradientOverlay = styled.div`
@@ -499,6 +512,8 @@ const coaches = [
     levelColor: C.error,
     icon: "military_tech",
     symbol: "⚔",
+    image: "/coach-drill-sergeant.jpg",
+    imageAlt: "The Drill Sergeant",
   },
   {
     key: "coach2",
@@ -513,6 +528,8 @@ const coaches = [
     levelColor: C.primary,
     icon: "psychology",
     symbol: "☯",
+    image: "/coach-zen-psych.jpg",
+    imageAlt: "The Zen Psychologist",
   },
   {
     key: "coach3",
@@ -527,6 +544,8 @@ const coaches = [
     levelColor: C.tertiary,
     icon: "change_history",
     symbol: "✦",
+    image: "/coach-crystal-mystic.jpg",
+    imageAlt: "The Crystal Mystic",
   },
 ];
 
@@ -626,9 +645,7 @@ const Home: React.FC = () => {
               onClick={() => navigate(`/prompt/${coach.key}`)}
             >
               <CardImageBox>
-                <CardImagePlaceholder color={coach.accent}>
-                  {coach.symbol}
-                </CardImagePlaceholder>
+                <CoachImage src={coach.image} alt={coach.imageAlt} />
                 <GradientOverlay />
                 <Badge color={coach.badgeColor} textColor={coach.badgeText}>
                   {coach.badge}
