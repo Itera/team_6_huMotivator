@@ -420,7 +420,7 @@ const coaches = [
   {
     key: "coach1",
     name: "Drill Sergeant",
-    desc: "Weakness is a choice this animated powerhouse won't let you make. Hard work, no shortcuts, and high-voltage discipline.",
+    desc: "No shortcuts. Pure discipline. High voltage.",
     badge: "MILITARY",
     badgeColor: C.errorContainer,
     badgeText: "#fff",
@@ -434,7 +434,7 @@ const coaches = [
   {
     key: "coach2",
     name: "The Zen Psych",
-    desc: '"I understand this is hard for you." A softer approach to total life disruption. He listens to your excuses, then calmly dismantles them.',
+    desc: "Listens to your excuses — then calmly dismantles them.",
     badge: "EMPATHY",
     badgeColor: C.primary,
     badgeText: C.onPrimary,
@@ -448,7 +448,7 @@ const coaches = [
   {
     key: "coach3",
     name: "Crystal Mystic",
-    desc: "Finds your optimal training frequency in the vibration of raw quartz. Sacred geometry and ethereal gains. Align your chakras and your lats.",
+    desc: "Sacred geometry. Ethereal gains. Align your chakras.",
     badge: "SPIRIT",
     badgeColor: C.tertiary,
     badgeText: C.onTertiary,
