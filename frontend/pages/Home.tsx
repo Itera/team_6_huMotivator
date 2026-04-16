@@ -74,7 +74,7 @@ const Header = styled.header`
   position: fixed;
   top: 0; left: 0; width: 100%;
   z-index: 50;
-  height: 5rem;
+  height: 3.5rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -88,7 +88,7 @@ const Logo = styled.h1`
   font-family: 'Epilogue', sans-serif;
   font-weight: 900;
   font-style: italic;
-  font-size: 1.75rem;
+  font-size: 1.25rem;
   text-transform: uppercase;
   letter-spacing: -0.04em;
   color: ${C.primary};
@@ -123,8 +123,8 @@ const Sidebar = styled.aside`
     position: fixed;
     left: 0; top: 0;
     height: 100vh;
-    width: 16rem;
-    padding-top: 6rem;
+    width: 13rem;
+    padding-top: 4rem;
     background: ${C.bgDeep};
     border-right: 4px solid ${C.surface};
     z-index: 40;
@@ -213,23 +213,23 @@ const DisruptBtn = styled.button`
 const Main = styled.main`
   position: relative;
   z-index: 10;
-  padding: 7rem 1.5rem 6rem;
+  padding: 4.5rem 1.5rem 0.5rem;
   min-height: 100vh;
-  @media (min-width: 1024px) { padding-left: calc(16rem + 1.5rem); }
+  @media (min-width: 1024px) { padding-left: calc(13rem + 1.5rem); }
 `;
 
 const PageHeader = styled.div`
-  margin-bottom: 3rem;
+  margin-bottom: 1rem;
 `;
 
 const PageTitle = styled.h2`
   font-family: 'Epilogue', sans-serif;
   font-weight: 900;
-  font-size: clamp(3.5rem, 10vw, 6rem);
+  font-size: clamp(2rem, 5vw, 3rem);
   text-transform: uppercase;
   letter-spacing: -0.04em;
   line-height: 1;
-  margin: 0 0 1rem;
+  margin: 0 0 0.5rem;
   color: ${C.onSurface};
   position: relative;
 
@@ -269,7 +269,7 @@ const SubText = styled.p`
 
 const Grid = styled.div`
   display: grid;
-  gap: 3rem;
+  gap: 1rem;
   grid-template-columns: 1fr;
   @media (min-width: 768px) { grid-template-columns: repeat(2, 1fr); }
   @media (min-width: 1024px) { grid-template-columns: repeat(3, 1fr); }
@@ -295,7 +295,7 @@ const CoachCard = styled.div<CardAccent>`
 `;
 
 const CardImageBox = styled.div`
-  aspect-ratio: 1;
+  height: 120px;
   overflow: hidden;
   background: ${C.surfaceLow};
   position: relative;
@@ -310,7 +310,7 @@ const CardImagePlaceholder = styled.div<{ color: string }>`
   justify-content: center;
   font-family: 'Epilogue', sans-serif;
   font-weight: 900;
-  font-size: 6rem;
+  font-size: 3.5rem;
   color: ${({ color }) => color};
   opacity: 0.4;
   text-shadow: 0 0 40px currentColor;
@@ -337,24 +337,24 @@ const Badge = styled.div<{ color: string; textColor: string }>`
 `;
 
 const CardBody = styled.div`
-  padding: 2rem;
+  padding: 0.75rem 1rem;
 `;
 
 const CoachName = styled.h3`
   font-family: 'Epilogue', sans-serif;
   font-weight: 900;
   font-style: italic;
-  font-size: 2.25rem;
+  font-size: 1.4rem;
   text-transform: uppercase;
   letter-spacing: -0.04em;
   color: ${C.onSurface};
-  margin: 0 0 0.75rem;
+  margin: 0 0 0.35rem;
 `;
 
 const CoachDesc = styled.p`
   font-family: 'Space Grotesk', sans-serif;
-  font-size: 0.9rem;
-  line-height: 1.6;
+  font-size: 0.75rem;
+  line-height: 1.4;
   color: ${C.onSurface};
   opacity: 0.8;
   margin: 0;
@@ -364,8 +364,8 @@ const CardFooter = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: flex-end;
-  margin-top: 2rem;
-  padding-top: 1.5rem;
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
   border-top: 1px solid rgba(255,255,255,0.08);
 `;
 
@@ -379,7 +379,7 @@ const LevelLabel = styled.span<{ color: string }>`
 `;
 
 const FooterIcon = styled.span<{ color: string }>`
-  font-size: 1.75rem;
+  font-size: 1.25rem;
   color: ${({ color }) => color};
 `;
 
