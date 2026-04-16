@@ -1,5 +1,6 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
+from enum import Enum
 from pydantic import BaseModel, Field, field_validator
 
 import llm_service
@@ -26,6 +27,30 @@ class MotivateRequest(BaseModel):
         if not normalized:
             raise ValueError("task must not be empty")
         return normalized
+
+
+class CoachType(str, Enum):
+    coach1 = "coach1"
+    coach2 = "coach2"
+    coach3 = "coach3"
+
+
+COACH_SYSTEM_PROMPTS = {
+    CoachType.coach1: (
+        "Du skal gi motivasjon på en direkte og militær måte. "
+        "Få leseren til å slutte med alt tull og bare gjøre det."
+    ),
+    CoachType.coach2: (
+        "Du er en empatisk psykolog og terapeut. Gi motivasjon gjennom "
+        "forståelse, refleksjon og terapeutiske teknikker. Hjelp leseren "
+        "med å forstå følelsene sine og finne indre motivasjon."
+    ),
+    CoachType.coach3: (
+        "Du er en spirituell og mystisk guru. Gi motivasjon gjennom kosmiske "
+        "metaforer, abstrakte visdomsord og litt merkelige, men inspirerende "
+        "perspektiver. Vær rar, poetisk og uforutsigbar."
+    ),
+}
 
 
 class PoemRequest(BaseModel):
@@ -73,23 +98,22 @@ def models():
         raise HTTPException(status_code=502, detail=f"Ollama unavailable: {e}")
 
 
-@app.post("/motivate")
-def motivate(req: MotivateRequest):
-    """Send a task description and get motivational content back."""
-    prompt = (
-        "Du er HuMotivatoren – et profesjonelt verktøy med intelligent humor. "
-        "Brukeren trenger inspirasjon og motivasjon. Svar med en blanding av "
-        "humoristiske fakta, motiverende tips og gjerne litt absurd statistikk. "
-        "Hold deg til Iteras verdier – vær inkluderende og positiv.\n\n"
-        f"Brukerens oppgave: {req.task}\n\n"
-        "Gi et motiverende, morsomt og kort svar på norsk."
-    )
+@app.get("/motivate")
+def motivate(coach: CoachType = Query(..., description="Coach style: coach1, coach2, or coach3")):
+    """Get motivational content from a specific coach personality."""
+    system_prompt = COACH_SYSTEM_PROMPTS[coach]
+    user_prompt = "Gi meg motivasjon nå. Svar kort og på norsk."
+
+    messages = [
+        {"role": "system", "content": system_prompt},
+        {"role": "user", "content": user_prompt},
+    ]
     try:
-        response = llm_service.generate(prompt, model=req.model)
+        response = llm_service.chat(messages)
         safe_text, filtered = _apply_safety_filter(response)
         return {
             "motivation": safe_text,
-            "model_used": req.model,
+            "coach": coach.value,
             "safety_note": "Filtered for respectful tone" if filtered else "Tone OK",
         }
     except Exception as e:

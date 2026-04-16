@@ -73,20 +73,49 @@
       "modified": 1713264000000
     },
     {
-      "_id": "req_motivate",
+      "_id": "req_motivate_coach1",
       "_type": "request",
       "parentId": "fld_llm",
-      "name": "Motivate",
-      "method": "POST",
+      "name": "Motivate - Coach 1 (Militær)",
+      "method": "GET",
       "url": "http://localhost:8000/motivate",
-      "headers": [
-        { "name": "Content-Type", "value": "application/json" }
+      "headers": [],
+      "body": {},
+      "parameters": [
+        { "name": "coach", "value": "coach1" }
       ],
-      "body": {
-        "mimeType": "application/json",
-        "text": "{\n  \"task\": \"Jeg skal lese nyhetene og trenger inspirasjon\",\n  \"model\": \"gemma3:1b\"\n}"
-      },
-      "parameters": [],
+      "authentication": {},
+      "created": 1713264000000,
+      "modified": 1713264000000
+    },
+    {
+      "_id": "req_motivate_coach2",
+      "_type": "request",
+      "parentId": "fld_llm",
+      "name": "Motivate - Coach 2 (Terapeut)",
+      "method": "GET",
+      "url": "http://localhost:8000/motivate",
+      "headers": [],
+      "body": {},
+      "parameters": [
+        { "name": "coach", "value": "coach2" }
+      ],
+      "authentication": {},
+      "created": 1713264000000,
+      "modified": 1713264000000
+    },
+    {
+      "_id": "req_motivate_coach3",
+      "_type": "request",
+      "parentId": "fld_llm",
+      "name": "Motivate - Coach 3 (Spirituell)",
+      "method": "GET",
+      "url": "http://localhost:8000/motivate",
+      "headers": [],
+      "body": {},
+      "parameters": [
+        { "name": "coach", "value": "coach3" }
+      ],
       "authentication": {},
       "created": 1713264000000,
       "modified": 1713264000000
