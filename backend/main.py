@@ -20,23 +20,15 @@ app.add_middleware(
 )
 
 
-class MotivateRequest(BaseModel):
-    task: str = Field(min_length=3, max_length=280)
-    model: str = "gemma3:1b"
-
-    @field_validator("task")
-    @classmethod
-    def normalize_task(cls, value: str) -> str:
-        normalized = value.strip()
-        if not normalized:
-            raise ValueError("task must not be empty")
-        return normalized
-
-
 class CoachType(str, Enum):
     coach1 = "coach1"
     coach2 = "coach2"
     coach3 = "coach3"
+
+
+class MotivateRequest(BaseModel):
+    coach: CoachType
+    task: str = Field(default="", max_length=280)
 
 
 COACH_SYSTEM_PROMPTS = {
@@ -182,12 +174,11 @@ def models():
         raise HTTPException(status_code=502, detail=f"Ollama unavailable: {e}")
 
 
-@app.get("/motivate")
-def motivate(
-    coach: CoachType = Query(..., description="Coach style: coach1, coach2, or coach3"),
-    task: str = Query(default="", description="Optional task to motivate about"),
-):
+@app.post("/motivate")
+def motivate(req: MotivateRequest):
     """Get motivational content from a specific coach personality, optionally enriched with media."""
+    coach = req.coach
+    task = req.task
     system_prompt = COACH_SYSTEM_PROMPTS[coach] + STRUCTURED_SUFFIX
     user_prompt = (
         f"Gi meg motivasjon for denne oppgaven: {task.strip()}. Svar kort og på norsk."
